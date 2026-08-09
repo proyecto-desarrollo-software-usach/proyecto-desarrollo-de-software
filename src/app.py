@@ -1,27 +1,23 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
 from explore_exoplanets import (
-    CSV_PATH,
-    METADATA_PATH,
     available_plot_columns,
     load_catalog,
-    read_metadata,
 )
-
-
-ROOT = Path(__file__).resolve().parent
 
 PLOTLY_CONFIG = {
     "responsive": True,
     "displaylogo": False,
     "scrollZoom": False,
 }
+
+# El catálogo se vuelve a consultar automáticamente en NASA cada 24 horas.
+# Streamlit conserva el resultado entre ejecuciones dentro de este intervalo.
+CATALOG_REFRESH_SECONDS = 24 * 60 * 60
 
 # Paleta visual compartida entre la interfaz y los gráficos.
 # Mantenerla aquí evita que la web y Plotly se sientan como piezas separadas.
@@ -599,18 +595,20 @@ def apply_theme() -> None:
     )
 
 
-@st.cache_data(show_spinner="Cargando catálogo de exoplanetas...")
+@st.cache_data(
+    ttl=CATALOG_REFRESH_SECONDS,
+    show_spinner="Actualizando catálogo desde NASA Exoplanet Archive...",
+)
 def get_catalog() -> pd.DataFrame:
-    return load_catalog(force_download=False)
+    """
+    Obtiene el catálogo más reciente desde NASA Exoplanet Archive.
 
-
-def refresh_catalog() -> None:
-    with st.spinner("Descargando catálogo actualizado desde NASA Exoplanet Archive..."):
-        load_catalog(force_download=True)
-
-    st.cache_data.clear()
-    st.success("Catálogo actualizado correctamente.")
-    st.rerun()
+    Streamlit conserva el resultado durante 24 horas para evitar descargas
+    innecesarias. Cuando vence la caché, la siguiente ejecución consulta NASA
+    nuevamente. Si NASA no está disponible, `load_catalog` utiliza el último
+    CSV local válido como respaldo.
+    """
+    return load_catalog(force_download=True)
 
 
 def format_axis_label(column: str, labels: dict[str, str]) -> str:
@@ -750,7 +748,10 @@ def filter_catalog(
 ) -> pd.DataFrame:
     filtered = df.copy()
 
-    if methods and "discoverymethod" in filtered.columns:
+    # `methods` siempre representa de forma explícita los métodos que el
+    # usuario quiere ver. Si la lista queda vacía en modo personalizado,
+    # el resultado queda vacío en vez de restaurar filtros ocultos.
+    if "discoverymethod" in filtered.columns:
         filtered = filtered[filtered["discoverymethod"].isin(methods)]
 
     if "system_planet_count" in filtered.columns:
@@ -780,27 +781,7 @@ def render_overview(df: pd.DataFrame) -> None:
 
 
 def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str], tuple[int, int], list[str], str, bool, str, bool, str, str]:
-    default_methods = ["Transit", "Radial Velocity", "Microlensing", "Imaging"]
-
     with st.sidebar:
-        st.markdown("### Datos")
-
-        if st.button("Actualizar catálogo desde NASA", use_container_width=True):
-            refresh_catalog()
-
-        st.caption(f"CSV: `{CSV_PATH}`")
-
-        metadata = read_metadata()
-        downloaded_at = metadata.get("downloaded_at_utc")
-
-        if downloaded_at:
-            st.caption(f"Última descarga UTC: `{downloaded_at}`")
-
-        if not CSV_PATH.exists():
-            st.warning("No existe CSV local. Se descargará automáticamente al cargar.")
-
-        st.divider()
-
         st.markdown("### Controles Principales")
 
         st.selectbox(
@@ -815,12 +796,29 @@ def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str],
 
         method_options = sorted(df["discoverymethod"].dropna().unique().tolist())
 
-        methods = st.multiselect(
-            "Método de Descubrimiento",
-            options=method_options,
-            key="methods",
-            placeholder="Selecciona métodos...",
+        # Se evita el significado ambiguo de un multiselect vacío.
+        # En modo "todos", cualquier método nuevo publicado por NASA entra
+        # automáticamente porque la lista proviene del catálogo descargado.
+        show_all_methods = st.toggle(
+            "Mostrar todos los métodos",
+            value=True,
+            key="show_all_methods",
+            help=(
+                "Incluye automáticamente todos los métodos de detección presentes "
+                "en el catálogo actual de NASA, incluidos los que se incorporen en el futuro."
+            ),
         )
+
+        if show_all_methods:
+            methods = method_options
+            st.caption(f"{len(method_options)} métodos incluidos automáticamente.")
+        else:
+            methods = st.multiselect(
+                "Método de Descubrimiento",
+                options=method_options,
+                key="methods",
+                placeholder="Selecciona uno o más métodos",
+            )
 
         min_planets = int(df["system_planet_count"].min())
         max_planets = int(df["system_planet_count"].max())
@@ -898,10 +896,6 @@ def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str],
                 else "Por multiplicidad del sistema"
             ),
         )
-
-    if not methods:
-        methods = default_methods
-        st.sidebar.info("Restaurando métodos sugeridos por defecto.")
 
     return (
         methods,
@@ -1158,7 +1152,7 @@ def render_top_systems(filtered: pd.DataFrame, labels: dict[str, str]) -> None:
 
 def render_csv_data(filtered: pd.DataFrame) -> None:
     with st.container(border=True):
-        st.subheader("Catálogo de Datos Filtrados")
+        st.subheader("Catálogo Filtrado")
 
         visible_columns = [
             "pl_name",
@@ -1184,29 +1178,15 @@ def render_csv_data(filtered: pd.DataFrame) -> None:
             hide_index=True,
         )
 
-        st.download_button(
-            "Descargar CSV Muestra",
-            data=filtered.to_csv(index=False).encode("utf-8"),
-            file_name="exoplanets_filtrados.csv",
-            mime="text/csv",
-            type="primary",
-            use_container_width=True,
-        )
-
-        st.caption(f"Fuente de datos: `{CSV_PATH.name}`")
+        st.caption("Fuente: NASA Exoplanet Archive · actualización automática cada 24 horas.")
 
 
 def initialize_session_state() -> None:
-    default_methods = ["Transit", "Radial Velocity", "Microlensing", "Imaging"]
-
     if "preset" not in st.session_state:
         st.session_state["preset"] = "Masa vs semieje mayor"
 
     if "x_axis" not in st.session_state:
         set_preset_state(st.session_state["preset"])
-
-    if "methods" not in st.session_state:
-        st.session_state["methods"] = default_methods
 
     if "size_mode" not in st.session_state:
         st.session_state["size_mode"] = "fixed"
@@ -1289,7 +1269,7 @@ def main() -> None:
         st.warning("Los filtros actuales excluyen todos los datos del catálogo.")
         return
 
-    tab1, tab2, tab3 = st.tabs(["Explorador Visual", "Top Sistemas", "Datos CSV"])
+    tab1, tab2, tab3 = st.tabs(["Explorador Visual", "Top Sistemas", "Catálogo"])
 
     with tab1:
         render_visual_explorer(
