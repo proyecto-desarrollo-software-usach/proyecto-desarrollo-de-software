@@ -20,7 +20,7 @@ Ultimas etapas del codigo base y corrigiendo los errores.
 
 ## Ejecución
 
-No requiere instalación. Solo abrir la el sitio web en su navegador favorito.
+No requiere instalación. Solo abrir el sitio web en su navegador favorito.
 https://atlas-de-exoplanetas.streamlit.app/
 
 ## Ejemplo de Uso (ya dentro de la web)
