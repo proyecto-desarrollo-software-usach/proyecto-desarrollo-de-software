@@ -4,7 +4,7 @@ En este proyecto se nos asignó la tarea de crear un sitio inspirandonos en lo q
 
 ## Estado Actual
 [En Desarrollo]
-Ultimas etapas del código base y corrigiendo los errores.
+Ultimas etapas del código base y corrigiendo errores.
 
 ## Clientes del Proyecto
 - Rubén Montecinos
