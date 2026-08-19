@@ -12,11 +12,11 @@ Ultimas etapas del codigo base y corrigiendo los errores.
 
 ## Integrantes
 
-- Simón Ranilao simon.ranilao@usach.cl
-- Ismael Salas ismael.salas@usach.cl
-- Martin Estay martin.estay@usach.cl
-- Catalina Figueroa catalina.figueroa.b@usach.cl
-- Maximiliano Pasten maximiliano.pasten.u@usach.cl
+- Simón Ranilao, simon.ranilao@usach.cl
+- Ismael Salas, ismael.salas@usach.cl
+- Martin Estay, martin.estay@usach.cl
+- Catalina Figueroa, catalina.figueroa.b@usach.cl
+- Maximiliano Pasten, maximiliano.pasten.u@usach.cl
 
 ## Ejecución
 
