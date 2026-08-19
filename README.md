@@ -1,6 +1,6 @@
 # Proyecto: Atlas de Exoplanetas
 
-En este proyecto se nos asigno la tarea de crear un sitio inspirandonos en lo que es el NASA Exoplanet Archive, que contiene una gran cantidad de datos astronómicos distribuidos en cientos de variables, donde la exploración directa de esta información puede resultar compleja para estudiantes o usuarios que no están familiarizados con la estructura del catálogo. Por lo que este proyecto propone una aplicación web orientada a facilitar la exploración del catálogo mediante una interfaz visual, filtros, y gráficos interactivos.
+En este proyecto se nos asignó la tarea de crear un sitio inspirandonos en lo que es el NASA Exoplanet Archive, que contiene una gran cantidad de datos astronómicos distribuidos en cientos de variables, donde la exploración directa de esta información puede resultar compleja para estudiantes o usuarios que no están familiarizados con la estructura del catálogo. Por lo que este proyecto propone una aplicación web orientada a facilitar la exploración del catálogo mediante una interfaz visual, filtros, y gráficos interactivos.
 
 ## Estado Actual
 [En Desarrollo]
