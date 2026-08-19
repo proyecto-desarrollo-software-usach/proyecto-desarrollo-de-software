@@ -16,7 +16,7 @@ Ultimas etapas del codigo base y corrigiendo los errores.
 - Ismael Salas, mail ismael.salas@usach.cl
 - Martin Estay, mail martin.estay@usach.cl
 - Catalina Figueroa, mail catalina.figueroa.b@usach.cl
-- Maximiliano Pasten, maximiliano.pasten.u@usach.cl
+- Maximiliano Pasten, mail maximiliano.pasten.u@usach.cl
 
 ## Ejecución
 
