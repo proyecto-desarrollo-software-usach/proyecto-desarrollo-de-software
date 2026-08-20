@@ -25,5 +25,5 @@ https://atlas-de-exoplanetas.streamlit.app/
 
 ## Ejemplo de Uso (ya dentro de la web)
 
-Tras poner en marcha la web gracias a la instalación, nos encontraremos con el catálogo de exoplanetas que posee Atlas, también se mostrará el explorador virtual donde podrán observar y modificar parámetros de los gráficos presentados en Atlas, tales como masa de planetas en función de la Tierra, exentricidad orbital, y otras más que estan disponibles en la web.
+Tras poner en marcha la web gracias a la instalación, nos encontraremos con el catálogo de exoplanetas que posee Atlas, también se mostrará el explorador virtual donde podrán observar y modificar parámetros de los gráficos presentados en Atlas, tales como masa de planetas en función de la Tierra, exentricidad orbital, y otras más que están disponibles en la web.
 Otra característica que pueden ir modificando es el mapa de color de los exoplanetas mostrados en el grafico.
