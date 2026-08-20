@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -160,6 +162,193 @@ DISCOVERY_METHOD_ES = {
     "Pulsation Timing Variations": "Variaciones temporales de pulsación",
     "Disk Kinematics": "Cinemática de disco",
 }
+
+
+APP_DIR = Path(__file__).resolve().parent
+DETECTION_VIDEO_DIR = APP_DIR / "assets" / "metodos_deteccion"
+
+MAIN_SECTIONS = [
+    "Exploración orbital",
+    "Sistemas destacados",
+    "Catálogo",
+    "Métodos de detección",
+]
+
+DETECTION_METHODS = [
+    {
+        "title": "Tránsito",
+        "archive_method": "Transit",
+        "video": "Transito.mp4",
+        "signal": "Disminución periódica del flujo estelar",
+        "description": (
+            "Cuando un exoplaneta pasa frente a su estrella desde nuestra línea de visión, "
+            "bloquea una pequeña fracción de su luz. Si la caída de brillo se repite de forma "
+            "periódica, el intervalo entre eventos entrega el período orbital y la profundidad "
+            "del tránsito permite estimar el tamaño del exoplaneta respecto de su estrella."
+        ),
+        "examples": [
+            "TRAPPIST-1 — sistema compacto de siete exoplanetas de tamaño terrestre detectados por tránsitos.",
+            "Kepler-186 f — exoplaneta de tamaño terrestre descubierto mediante el método de tránsito.",
+        ],
+    },
+    {
+        "title": "Velocidad radial",
+        "archive_method": "Radial Velocity",
+        "video": "VelocidadRadial.mp4",
+        "signal": "Desplazamiento Doppler de las líneas espectrales",
+        "description": (
+            "La estrella y el exoplaneta orbitan un centro de masa común. Ese pequeño movimiento "
+            "hace que la estrella se acerque y se aleje periódicamente de nosotros, desplazando sus "
+            "líneas espectrales por efecto Doppler. La amplitud y el período de la señal permiten "
+            "estimar la órbita y la masa mínima del exoplaneta."
+        ),
+        "examples": [
+            "51 Pegasi b — primer exoplaneta confirmado alrededor de una estrella similar al Sol mediante velocidad radial.",
+            "Proxima Centauri b — exoplaneta alrededor de la estrella más cercana al Sol, detectado por velocidad radial.",
+        ],
+    },
+    {
+        "title": "Microlente gravitacional",
+        "archive_method": "Microlensing",
+        "video": "MicrolenteGravitacional.mp4",
+        "signal": "Amplificación gravitacional temporal de una estrella de fondo",
+        "description": (
+            "Si una estrella pasa casi exactamente frente a otra más distante, su gravedad curva y "
+            "amplifica la luz de la estrella de fondo. Un exoplaneta alrededor de la estrella que actúa "
+            "como lente puede producir una anomalía breve adicional en esa amplificación. El método es "
+            "especialmente sensible a mundos fríos y relativamente alejados de sus estrellas."
+        ),
+        "examples": [
+            "OGLE-2005-BLG-390L b — mundo frío de pocas masas terrestres detectado mediante microlente gravitacional.",
+        ],
+    },
+    {
+        "title": "Imagen directa",
+        "archive_method": "Imaging",
+        "video": "ImagenDirecta.mp4",
+        "signal": "Fotones del propio exoplaneta separados del resplandor estelar",
+        "description": (
+            "En lugar de inferir el exoplaneta a partir de cambios en su estrella, la imagen directa "
+            "intenta registrar su propia luz. Como la estrella es muchísimo más brillante, se emplean "
+            "coronógrafos y técnicas de alto contraste para suprimir el resplandor estelar. Funciona "
+            "mejor con exoplanetas jóvenes, masivos y separados de su estrella."
+        ),
+        "examples": [
+            "HR 8799 b, c, d y e — uno de los sistemas multiplanetarios de imagen directa más emblemáticos.",
+            "β Pictoris b — gigante joven observado directamente alrededor de β Pictoris.",
+        ],
+    },
+    {
+        "title": "Astrometría",
+        "archive_method": "Astrometry",
+        "video": "Astrometria.mp4",
+        "signal": "Pequeño desplazamiento de la posición de la estrella en el cielo",
+        "description": (
+            "La gravedad de un exoplaneta hace que su estrella describa un pequeño movimiento alrededor "
+            "del centro de masa del sistema. La astrometría mide con gran precisión ese desplazamiento "
+            "sobre el plano del cielo respecto de estrellas de referencia. Al recuperar la inclinación "
+            "orbital, puede determinar la masa real del compañero y no solo una masa mínima."
+        ),
+        "examples": [
+            "GJ 896 A b — planeta cuya señal astrométrica fue medida alrededor de una componente de un sistema binario.",
+            "Gaia-4 b — exoplaneta confirmado a partir de una solución orbital astrométrica de Gaia y seguimiento espectroscópico.",
+        ],
+    },
+    {
+        "title": "Variaciones del tiempo de tránsito",
+        "archive_method": "Transit Timing Variations",
+        "video": "VariacionesTiempoTransito.mp4",
+        "signal": "Adelantos y retrasos respecto de una secuencia regular de tránsitos",
+        "description": (
+            "En un sistema con varios exoplanetas, las perturbaciones gravitacionales hacen que un tránsito "
+            "pueda ocurrir ligeramente antes o después de lo esperado. Esas variaciones temporales, conocidas "
+            "como TTV, permiten inferir la presencia y las masas de otros cuerpos, incluso cuando el exoplaneta "
+            "perturbador no transita frente a la estrella."
+        ),
+        "examples": [
+            "Kepler-19 c — compañero no transitante descubierto originalmente mediante las variaciones del tránsito de Kepler-19 b.",
+            "Kepler-46 c — compañero detectado por el efecto que produce sobre los tiempos de tránsito de Kepler-46 b.",
+        ],
+    },
+    {
+        "title": "Variaciones del tiempo de eclipse",
+        "archive_method": "Eclipse Timing Variations",
+        "video": "VariacionesTiempoEclipse.mp4",
+        "signal": "Cambios en los tiempos de eclipse de una estrella binaria",
+        "description": (
+            "En una binaria eclipsante, los eclipses deberían repetirse con una cadencia muy precisa. Un "
+            "compañero circumbinario puede desplazar el sistema alrededor de un centro de masa común y también "
+            "perturbar dinámicamente las órbitas, haciendo que los eclipses lleguen antes o después de lo "
+            "predicho. Es una técnica potente, aunque requiere descartar otras causas de variación temporal."
+        ),
+        "examples": [
+            "DP Leo Ab — compañero circumbinario catalogado a partir de variaciones temporales de eclipse.",
+        ],
+    },
+    {
+        "title": "Timing de púlsar",
+        "archive_method": "Pulsar Timing",
+        "video": "TimingPulsar.mp4",
+        "signal": "Cambios en el tiempo de llegada de pulsos extremadamente regulares",
+        "description": (
+            "Los púlsares emiten pulsos con una regularidad extraordinaria y pueden funcionar como relojes "
+            "astronómicos. Si un exoplaneta los hace moverse alrededor de un centro de masa común, la distancia "
+            "que recorre cada pulso hasta nosotros cambia ligeramente. Esos adelantos y retrasos permiten medir "
+            "órbitas y masas con gran precisión."
+        ),
+        "examples": [
+            "PSR B1257+12 c y d — parte del primer sistema de exoplanetas confirmado alrededor de un púlsar.",
+            "PSR B1257+12 b — pequeño compañero del mismo sistema, también medido por timing de púlsar.",
+        ],
+    },
+    {
+        "title": "Timing de pulsaciones",
+        "archive_method": "Pulsation Timing Variations",
+        "video": "TimingPulsaciones.mp4",
+        "signal": "Cambios de fase en pulsaciones estelares regulares",
+        "description": (
+            "Algunas estrellas variables pulsan con suficiente estabilidad como para actuar como relojes. "
+            "Cuando un compañero planetario hace que la estrella se mueva, cambia ligeramente el tiempo de "
+            "viaje de la luz y, por tanto, la fase observada de las pulsaciones. Una modulación periódica puede "
+            "revelar la órbita del compañero."
+        ),
+        "examples": [
+            "V391 Peg b — compañero catalogado mediante variaciones temporales de pulsación.",
+            "KIC 7917485 b — compañero detectado mediante el mismo principio en datos de Kepler.",
+        ],
+    },
+    {
+        "title": "Modulación del brillo orbital",
+        "archive_method": "Orbital Brightness Modulation",
+        "video": "ModulacionBrilloOrbital.mp4",
+        "signal": "Variación periódica del brillo total con la fase orbital",
+        "description": (
+            "El brillo combinado de una estrella y su exoplaneta puede cambiar durante la órbita incluso sin "
+            "un tránsito. La señal puede contener luz reflejada o térmica del planeta, Doppler beaming y pequeñas "
+            "deformaciones gravitatorias de la estrella. Al repetirse con el período orbital, estas modulaciones "
+            "permiten detectar o caracterizar compañeros cercanos."
+        ),
+        "examples": [
+            "HAT-P-7 b — presenta una señal fotométrica orbital medible además de sus tránsitos y velocidad radial.",
+            "KELT-9 b — gigante ultracaliente con modulación orbital registrada en su curva de fase.",
+        ],
+    },
+    {
+        "title": "Cinemática de disco",
+        "archive_method": "Disk Kinematics",
+        "video": "CinematicaDisco.mp4",
+        "signal": "Desviaciones locales de la velocidad del gas respecto de la rotación kepleriana",
+        "description": (
+            "Un exoplaneta en formación puede perturbar el gas de su disco protoplanetario. Observaciones "
+            "espectrales de alta resolución permiten reconstruir la velocidad del gas y buscar desviaciones "
+            "locales respecto de una rotación aproximadamente kepleriana. Esas anomalías cinemáticas pueden "
+            "delatar un planeta joven todavía inmerso en el disco."
+        ),
+        "examples": [
+            "HD 97048 b — exoplaneta catalogado a partir de una perturbación cinemática en su disco protoplanetario.",
+        ],
+    },
+]
 
 DEFAULT_COLUMN_LABELS = {
     "pl_name": "Exoplaneta",
@@ -627,6 +816,99 @@ h1, h2, h3, p, label, [data-testid="stMetricLabel"] {
         padding-right: 0.65rem !important;
     }
 }
+
+/* Navegación principal controlable desde los indicadores del resumen. */
+[data-testid="stSegmentedControl"] {
+    margin: 0.25rem 0 0.8rem;
+}
+
+[data-testid="stSegmentedControl"] button {
+    border-radius: 0 !important;
+    border-color: var(--atlas-border) !important;
+    color: var(--atlas-text-soft) !important;
+    font-family: 'IBM Plex Mono', monospace !important;
+}
+
+[data-testid="stSegmentedControl"] button[aria-pressed="true"] {
+    color: var(--atlas-text) !important;
+    border-color: var(--atlas-accent) !important;
+}
+
+.atlas-metric-link {
+    display: block;
+    position: relative;
+    min-height: 112px;
+    padding: 1.15rem 1.2rem;
+    background: var(--atlas-surface);
+    border: 1px solid var(--atlas-border);
+    border-radius: 6px;
+    color: inherit !important;
+    text-decoration: none !important;
+    transition: transform 120ms ease, border-color 120ms ease;
+}
+
+.atlas-metric-link::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 28px;
+    height: 3px;
+    background: var(--atlas-accent);
+}
+
+.atlas-metric-link:hover {
+    border-color: var(--atlas-accent);
+    transform: translate(-1px, -1px);
+}
+
+.atlas-metric-label {
+    display: block;
+    color: var(--atlas-text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.76rem;
+    font-weight: 500;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+}
+
+.atlas-metric-value {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--atlas-text);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+.atlas-metric-action {
+    display: block;
+    margin-top: 0.55rem;
+    color: var(--atlas-accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+[data-testid="stVideo"] video {
+    width: 100% !important;
+    border: 1px solid var(--atlas-border);
+    border-radius: 6px;
+    background: #000;
+}
+
+@media (max-width: 768px) {
+    .atlas-metric-link {
+        min-height: 94px;
+        padding: 0.9rem;
+    }
+
+    .atlas-metric-value {
+        font-size: 1.25rem;
+    }
+}
 """
 
 
@@ -960,13 +1242,112 @@ def filter_catalog(
 def render_overview(df: pd.DataFrame) -> None:
     total_systems = df["hostname"].nunique()
     multi_systems = df.loc[df["system_planet_count"] > 1, "hostname"].nunique()
+    method_count = df["discoverymethod"].nunique()
 
     with st.container(border=True):
         cols = st.columns(4)
-        cols[0].metric("Planetas Confirmados", f"{len(df):,}".replace(",", "."))
-        cols[1].metric("Sistemas Estelares", f"{total_systems:,}".replace(",", "."))
-        cols[2].metric("Sistemas Múltiples", f"{multi_systems:,}".replace(",", "."))
-        cols[3].metric("Métodos de Detección", df["discoverymethod"].nunique())
+        cols[0].metric("Exoplanetas confirmados", f"{len(df):,}".replace(",", "."))
+        cols[1].metric("Sistemas estelares", f"{total_systems:,}".replace(",", "."))
+        cols[2].metric("Sistemas múltiples", f"{multi_systems:,}".replace(",", "."))
+
+        cols[3].markdown(
+            f"""
+            <a class="atlas-metric-link" href="?section=metodos-deteccion">
+                <span class="atlas-metric-label">Métodos de detección</span>
+                <span class="atlas-metric-value">{method_count}</span>
+                <span class="atlas-metric-action">Abrir sección →</span>
+            </a>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+def apply_section_query_parameter() -> None:
+    """Permite abrir la sección de métodos desde el indicador superior."""
+    try:
+        requested = st.query_params.get("section")
+    except Exception:
+        requested = None
+
+    if requested == "metodos-deteccion":
+        st.session_state["main_section"] = "Métodos de detección"
+        try:
+            st.query_params.clear()
+        except Exception:
+            pass
+
+
+def render_main_navigation() -> str:
+    """Navegación horizontal equivalente a pestañas, pero controlable por estado."""
+    if hasattr(st, "segmented_control"):
+        selected = st.segmented_control(
+            "Sección principal",
+            options=MAIN_SECTIONS,
+            key="main_section",
+            label_visibility="collapsed",
+        )
+        return selected or st.session_state.get("main_section", MAIN_SECTIONS[0])
+
+    return st.radio(
+        "Sección principal",
+        options=MAIN_SECTIONS,
+        key="main_section",
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+
+
+def render_detection_methods(df: pd.DataFrame) -> None:
+    st.subheader("Métodos de detección de exoplanetas")
+    st.caption(
+        "Cada animación muestra la relación entre el fenómeno físico y la señal observada. "
+        "Los ejemplos destacados corresponden a sistemas o exoplanetas representativos del método."
+    )
+
+    method_titles = [method["title"] for method in DETECTION_METHODS]
+    selected_method = st.selectbox(
+        "Método a visualizar",
+        options=["Todos", *method_titles],
+        key="detection_method_view",
+        help="Selecciona un método concreto o muestra las once técnicas de detección.",
+    )
+
+    visible_methods = (
+        DETECTION_METHODS
+        if selected_method == "Todos"
+        else [method for method in DETECTION_METHODS if method["title"] == selected_method]
+    )
+
+    for method in visible_methods:
+        with st.container(border=True):
+            video_col, info_col = st.columns([1.05, 1.25], vertical_alignment="center")
+
+            with video_col:
+                video_path = DETECTION_VIDEO_DIR / method["video"]
+                if video_path.exists():
+                    st.video(str(video_path), autoplay=False, loop=True, muted=True)
+                else:
+                    st.warning(
+                        f"No se encontró el video `{method['video']}`. "
+                        "Comprueba la carpeta `assets/metodos_deteccion`."
+                    )
+
+            with info_col:
+                st.markdown(f"### {method['title']}")
+                st.caption(f"Señal observada · {method['signal']}")
+                st.write(method["description"])
+
+                count = int((df["discoverymethod"] == method["archive_method"]).sum())
+                count_display = f"{count:,}".replace(",", ".")
+                st.caption(
+                    f"Catálogo cargado: {count_display} exoplanetas con "
+                    f"**{translate_discovery_method(method['archive_method'])}** "
+                    "como método de descubrimiento."
+                )
+
+                st.markdown("**Ejemplos destacados**")
+                for example in method["examples"]:
+                    st.markdown(f"- {example}")
 
 
 def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str], tuple[int, int], list[str], str, bool, str, bool, str, str]:
@@ -1281,7 +1662,7 @@ def render_top_systems(
 
     with st.container(border=True):
         m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Planetas confirmados", len(sys_df))
+        m1.metric("Exoplanetas confirmados", len(sys_df))
 
         st_mass_val = sys_df["st_mass"].median()
         m2.metric(
@@ -1474,6 +1855,9 @@ def initialize_session_state() -> None:
     if "size_mode" not in st.session_state:
         st.session_state["size_mode"] = "fixed"
 
+    if "main_section" not in st.session_state:
+        st.session_state["main_section"] = MAIN_SECTIONS[0]
+
 
 def validate_required_columns(df: pd.DataFrame) -> None:
     required_columns = [
@@ -1497,6 +1881,7 @@ def main() -> None:
     theme_type = get_active_theme()
     apply_theme(theme_type)
     initialize_session_state()
+    apply_section_query_parameter()
 
     st.markdown(
         """
@@ -1559,15 +1944,17 @@ def main() -> None:
         selected_hosts=selected_hosts,
     )
 
+    section = render_main_navigation()
+
+    if section == "Métodos de detección":
+        render_detection_methods(df)
+        return
+
     if filtered.empty:
         st.warning("Los filtros actuales excluyen todos los datos del catálogo.")
         return
 
-    tab1, tab2, tab3 = st.tabs(
-        ["Exploración orbital", "Sistemas destacados", "Catálogo"]
-    )
-
-    with tab1:
+    if section == "Exploración orbital":
         render_visual_explorer(
             filtered,
             labels,
@@ -1579,11 +1966,9 @@ def main() -> None:
             log_y=log_y,
             theme_type=theme_type,
         )
-
-    with tab2:
+    elif section == "Sistemas destacados":
         render_top_systems(filtered, labels, theme_type)
-
-    with tab3:
+    else:
         render_csv_data(filtered)
 
 
