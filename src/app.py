@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import plotly.express as px
@@ -17,17 +19,11 @@ PLOTLY_CONFIG = {
     "scrollZoom": False,
 }
 
-# El catálogo se vuelve a consultar automáticamente en NASA cada 24 horas.
-# Streamlit conserva el resultado entre ejecuciones dentro de este intervalo.
-CATALOG_REFRESH_SECONDS = 24 * 60 * 60
+# El Atlas renueva el catalogo una vez al dia. La primera ejecución posterior
+# a las 08:00 (hora de Chile) utiliza una nueva clave de cache y consulta NASA.
+CATALOG_REFRESH_HOUR = 8
+CATALOG_TIMEZONE = "America/Santiago"
 
-# -----------------------------------------------------------------------------
-# Identidad visual del Atlas
-# -----------------------------------------------------------------------------
-# Se evita el patrón visual típico de dashboard "IA" (Inter + tarjetas muy
-# redondeadas + gradientes azules). La interfaz toma una estética de catálogo
-# científico / panel de observación: superficies planas, líneas finas, tipografía
-# técnica y acentos cálidos.
 THEME_TOKENS = {
     "dark": {
         "bg": "#0B1015",
@@ -899,6 +895,15 @@ h1, h2, h3, p, label, [data-testid="stMetricLabel"] {
     background: #000;
 }
 
+/* Acceso de regreso: pequeño, visible y separado del contenido científico. */
+.atlas-home-note {
+    color: var(--atlas-text-muted) !important;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.025em;
+}
+
+
 @media (max-width: 768px) {
     .atlas-metric-link {
         min-height: 94px;
@@ -1000,15 +1005,30 @@ def apply_theme(theme_type: str) -> None:
     )
 
 
-def get_catalog() -> pd.DataFrame:
-    """
-    Obtiene el catálogo más reciente desde NASA Exoplanet Archive.
+def get_catalog_refresh_key() -> str:
+    """Devuelve la ventana diaria de actualización iniciada a las 08:00 en Chile."""
+    now = datetime.now(ZoneInfo(CATALOG_TIMEZONE))
+    refresh_point = now.replace(
+        hour=CATALOG_REFRESH_HOUR,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+    if now < refresh_point:
+        refresh_point -= timedelta(days=1)
+    return refresh_point.strftime("%Y-%m-%dT08:00")
 
-    Streamlit conserva el resultado durante 24 horas para evitar descargas
-    innecesarias. Cuando vence la caché, la siguiente ejecución consulta NASA
-    nuevamente. Si NASA no está disponible, `load_catalog` utiliza el último
-    CSV local válido como respaldo.
+
+@st.cache_data(show_spinner=False)
+def get_catalog(refresh_key: str) -> pd.DataFrame:
     """
+    Obtiene el catálogo desde NASA Exoplanet Archive una vez por ventana diaria.
+
+    `refresh_key` cambia cada día a las 08:00 (hora de Chile). Por tanto, la
+    primera visita posterior a esa hora genera una nueva consulta. Si NASA no
+    está disponible, `load_catalog` conserva su mecanismo de respaldo local.
+    """
+    _ = refresh_key
     return load_catalog(force_download=True)
 
 
@@ -1219,9 +1239,6 @@ def filter_catalog(
 ) -> pd.DataFrame:
     filtered = df.copy()
 
-    # `methods` siempre representa de forma explícita los métodos que el
-    # usuario quiere ver. Si la lista queda vacía en modo personalizado,
-    # el resultado queda vacío en vez de restaurar filtros ocultos.
     if "discoverymethod" in filtered.columns:
         filtered = filtered[filtered["discoverymethod"].isin(methods)]
 
@@ -1252,7 +1269,7 @@ def render_overview(df: pd.DataFrame) -> None:
 
         cols[3].markdown(
             f"""
-            <a class="atlas-metric-link" href="?section=metodos-deteccion">
+            <a class="atlas-metric-link" href="?section=metodos-deteccion#metodos-deteccion" target="_self">
                 <span class="atlas-metric-label">Métodos de detección</span>
                 <span class="atlas-metric-value">{method_count}</span>
                 <span class="atlas-metric-action">Abrir sección →</span>
@@ -1298,6 +1315,7 @@ def render_main_navigation() -> str:
 
 
 def render_detection_methods(df: pd.DataFrame) -> None:
+    st.markdown('<div id="metodos-deteccion"></div>', unsafe_allow_html=True)
     st.subheader("Métodos de detección de exoplanetas")
     st.caption(
         "Cada animación muestra la relación entre el fenómeno físico y la señal observada. "
@@ -1366,9 +1384,6 @@ def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str],
 
         method_options = sorted(df["discoverymethod"].dropna().unique().tolist())
 
-        # Se evita el significado ambiguo de un multiselect vacío.
-        # En modo "todos", cualquier método nuevo publicado por NASA entra
-        # automáticamente porque la lista proviene del catálogo descargado.
         show_all_methods = st.toggle(
             "Mostrar todos los métodos",
             value=True,
@@ -1399,6 +1414,7 @@ def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str],
             min_value=min_planets,
             max_value=max_planets,
             value=(min_planets, max_planets),
+            key="planet_count_range",
         )
 
         st.divider()
@@ -1408,6 +1424,7 @@ def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str],
         host_query = st.text_input(
             "Buscar estrella anfitriona",
             placeholder="Ej.: TRAPPIST, Kepler...",
+            key="host_query",
         )
 
         matching_hosts = host_options
@@ -1421,6 +1438,7 @@ def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str],
             "Restringir a",
             options=matching_hosts,
             placeholder="Todos los sistemas",
+            key="selected_hosts",
         )
 
         st.divider()
@@ -1649,6 +1667,7 @@ def render_top_systems(
         "Selecciona un sistema para visualizar su arquitectura",
         options=system_summary["hostname"].tolist(),
         help="Elige una estrella para ver las métricas y la distribución de sus planetas.",
+        key="selected_top_system",
     )
 
     if not selected_top_system:
@@ -1842,7 +1861,35 @@ def render_csv_data(filtered: pd.DataFrame) -> None:
             hide_index=True,
         )
 
-        st.caption("Fuente: NASA Exoplanet Archive · actualización automática cada 24 horas.")
+        st.caption("Fuente: NASA Exoplanet Archive · actualización diaria desde las 08:00 (hora de Chile).")
+
+
+def reset_atlas_state() -> None:
+    """Restaura navegación, filtros y controles al estado inicial del Atlas."""
+    keys_to_reset = [
+        "preset",
+        "x_axis",
+        "y_axis",
+        "color_mode",
+        "log_x",
+        "log_y",
+        "size_mode",
+        "show_all_methods",
+        "methods",
+        "planet_count_range",
+        "host_query",
+        "selected_hosts",
+        "selected_top_system",
+        "detection_method_view",
+        "main_section",
+    ]
+    for key in keys_to_reset:
+        st.session_state.pop(key, None)
+
+    try:
+        st.query_params.clear()
+    except Exception:
+        pass
 
 
 def initialize_session_state() -> None:
@@ -1883,6 +1930,21 @@ def main() -> None:
     initialize_session_state()
     apply_section_query_parameter()
 
+    home_col, home_note_col = st.columns([0.16, 0.84], vertical_alignment="center")
+    with home_col:
+        st.button(
+            "⌂ Inicio",
+            key="atlas_home_reset",
+            use_container_width=True,
+            help="Volver al inicio y restaurar filtros, búsquedas y controles.",
+            on_click=reset_atlas_state,
+        )
+    with home_note_col:
+        st.markdown(
+            '<span class="atlas-home-note">Restaurar vista inicial</span>',
+            unsafe_allow_html=True,
+        )
+
     st.markdown(
         """
         <div class="hero">
@@ -1896,7 +1958,7 @@ def main() -> None:
             <div class="hero-meta">
                 <span>Fuente <strong>NASA</strong></span>
                 <span>Catálogo <strong>PS</strong></span>
-                <span>Sincronización <strong>24 h</strong></span>
+                <span>Actualización <strong>diaria · 08:00</strong></span>
                 <span>Vista <strong>interactiva</strong></span>
             </div>
         </div>
@@ -1905,7 +1967,7 @@ def main() -> None:
     )
 
     try:
-        df = get_catalog()
+        df = get_catalog(get_catalog_refresh_key())
     except Exception as error:
         st.error("No se pudo cargar el catálogo de exoplanetas.")
         st.exception(error)
