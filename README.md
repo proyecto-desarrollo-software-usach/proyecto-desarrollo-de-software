@@ -20,7 +20,7 @@ En este proyecto se nos asignó la tarea de crear un sitio inspirándonos en lo 
 
 ## Ejecución
 
-No requiere instalación, olo abrir el sitio web en su navegador favorito.
+No requiere instalación, solo abrir el sitio web en su navegador favorito.
 https://atlas-de-exoplanetas.streamlit.app/
 
 ## Ejemplo de Uso (ya dentro de la web)
