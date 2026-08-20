@@ -895,15 +895,6 @@ h1, h2, h3, p, label, [data-testid="stMetricLabel"] {
     background: #000;
 }
 
-/* Acceso de regreso: pequeño, visible y separado del contenido científico. */
-.atlas-home-note {
-    color: var(--atlas-text-muted) !important;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.025em;
-}
-
-
 @media (max-width: 768px) {
     .atlas-metric-link {
         min-height: 94px;
@@ -1370,6 +1361,15 @@ def render_detection_methods(df: pd.DataFrame) -> None:
 
 def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str], tuple[int, int], list[str], str, bool, str, bool, str, str]:
     with st.sidebar:
+        st.button(
+            "⌂ Inicio",
+            key="atlas_home_reset_sidebar",
+            use_container_width=True,
+            help="Volver al inicio y restaurar filtros, búsquedas y controles.",
+            on_click=reset_atlas_state,
+        )
+        st.caption("Restaurar vista inicial")
+        st.divider()
         st.markdown("### Panel de exploración")
 
         st.selectbox(
@@ -1929,21 +1929,6 @@ def main() -> None:
     apply_theme(theme_type)
     initialize_session_state()
     apply_section_query_parameter()
-
-    home_col, home_note_col = st.columns([0.16, 0.84], vertical_alignment="center")
-    with home_col:
-        st.button(
-            "⌂ Inicio",
-            key="atlas_home_reset",
-            use_container_width=True,
-            help="Volver al inicio y restaurar filtros, búsquedas y controles.",
-            on_click=reset_atlas_state,
-        )
-    with home_note_col:
-        st.markdown(
-            '<span class="atlas-home-note">Restaurar vista inicial</span>',
-            unsafe_allow_html=True,
-        )
 
     st.markdown(
         """
