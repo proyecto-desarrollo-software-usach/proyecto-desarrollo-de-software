@@ -14,7 +14,7 @@ En este proyecto se nos asignó la tarea de crear un sitio inspirándonos en lo 
 
 - Simón Ranilao, mail: simon.ranilao@usach.cl
 - Ismael Salas, mail: ismael.salas@usach.cl
-- Martin Estay, mail; martin.estay@usach.cl
+- Martin Estay, mail martin.estay@usach.cl
 - Catalina Figueroa, mail; catalina.figueroa.b@usach.cl
 - Maximiliano Pasten, mail; maximiliano.pasten.u@usach.cl
 
