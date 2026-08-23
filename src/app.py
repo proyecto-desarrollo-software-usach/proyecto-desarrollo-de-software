@@ -162,13 +162,118 @@ DISCOVERY_METHOD_ES = {
 
 APP_DIR = Path(__file__).resolve().parent
 DETECTION_VIDEO_DIR = APP_DIR / "assets" / "metodos_deteccion"
+CONCEPT_VIDEO_DIR = APP_DIR / "assets" / "conceptos"
 
 MAIN_SECTIONS = [
     "Exploración orbital",
     "Sistemas destacados",
     "Catálogo",
+    "Guía visual",
     "Métodos de detección",
 ]
+
+CONCEPTS = [
+    {
+        "id": "exoplaneta",
+        "title": "¿Qué es un exoplaneta?",
+        "video": "Exoplanet.mp4",
+        "group": "Fundamentos",
+        "summary": (
+            "Un exoplaneta es un planeta fuera del Sistema Solar. En el catálogo del Atlas, "
+            "la mayoría aparece ligado a una estrella anfitriona y se caracteriza mediante "
+            "parámetros orbitales y físicos medidos o inferidos observacionalmente."
+        ),
+        "points": [
+            "No pertenece al Sistema Solar.",
+            "Puede detectarse de forma directa o, más comúnmente, por el efecto que produce sobre su estrella.",
+            "No debe confundirse con un planeta errante, que no está ligado a una estrella anfitriona.",
+        ],
+    },
+    {
+        "id": "sistema-planetario",
+        "title": "Sistema planetario",
+        "video": "Sistema.mp4",
+        "group": "Fundamentos",
+        "summary": (
+            "Un sistema planetario reúne una estrella anfitriona —o un sistema estelar— y los "
+            "planetas que orbitan en torno a ella. Comparar sus planetas permite estudiar la "
+            "arquitectura completa del sistema, no solo objetos aislados."
+        ),
+        "points": [
+            "Un mismo sistema puede contener uno o varios exoplanetas confirmados.",
+            "Los períodos y semiejes mayores ordenan la arquitectura orbital.",
+            "Masa, radio y excentricidad ayudan a comparar la diversidad de sus planetas.",
+        ],
+    },
+    {
+        "id": "orbita",
+        "title": "Órbita",
+        "video": "Orbit.mp4",
+        "group": "Fundamentos",
+        "summary": (
+            "La órbita es la trayectoria que describe un cuerpo bajo la acción gravitatoria. "
+            "En sistemas planetarios puede ser casi circular o claramente elíptica; por eso "
+            "un círculo perfecto es solo un caso particular."
+        ),
+        "points": [
+            "La estrella se ubica en uno de los focos de una órbita elíptica idealizada.",
+            "La forma se cuantifica mediante la excentricidad.",
+            "El tamaño de la órbita se resume con el semieje mayor.",
+        ],
+    },
+    {
+        "id": "semieje-mayor",
+        "title": "Semieje mayor (a)",
+        "video": "Semieje.mp4",
+        "group": "Parámetros orbitales",
+        "summary": (
+            "El semieje mayor es la mitad del eje más largo de una elipse y funciona como la "
+            "escala característica de la órbita. En el Atlas se expresa normalmente en unidades astronómicas (UA)."
+        ),
+        "points": [
+            "No es simplemente la distancia instantánea entre estrella y planeta.",
+            "Para una órbita elíptica, a = (r_peri + r_apo) / 2.",
+            "Un valor mayor suele corresponder a una órbita más extensa.",
+        ],
+    },
+    {
+        "id": "periodo-orbital",
+        "title": "Período orbital (P)",
+        "video": "Periodo.mp4",
+        "group": "Parámetros orbitales",
+        "summary": (
+            "El período orbital es el tiempo que tarda el planeta en completar una vuelta alrededor "
+            "de su estrella anfitriona. En el catálogo utilizado por la app se expresa en días."
+        ),
+        "points": [
+            "Períodos cortos corresponden a órbitas que se completan rápidamente.",
+            "Está relacionado con el tamaño orbital mediante la dinámica kepleriana.",
+            "Es uno de los parámetros que puede medirse con gran precisión en sistemas transitantes.",
+        ],
+    },
+    {
+        "id": "excentricidad",
+        "title": "Excentricidad orbital (e)",
+        "video": "Exc.mp4",
+        "group": "Parámetros orbitales",
+        "summary": (
+            "La excentricidad mide cuánto se aparta una órbita de un círculo. Para una órbita "
+            "planetaria ligada, e = 0 representa un círculo y 0 < e < 1 una elipse cada vez más alargada."
+        ),
+        "points": [
+            "e = 0: órbita circular ideal.",
+            "0 < e < 1: órbita elíptica.",
+            "A mayor e, mayor diferencia entre las distancias de periastro y apoastro.",
+        ],
+    },
+]
+
+CONCEPT_BY_ID = {concept["id"]: concept for concept in CONCEPTS}
+CONCEPT_BY_COLUMN = {
+    "pl_orbsmax": "semieje-mayor",
+    "pl_orbper": "periodo-orbital",
+    "pl_orbeccen": "excentricidad",
+}
 
 DETECTION_METHODS = [
     {
@@ -905,6 +1010,30 @@ h1, h2, h3, p, label, [data-testid="stMetricLabel"] {
         font-size: 1.25rem;
     }
 }
+
+/* Guía visual: vocabulario científico integrado al flujo de exploración. */
+.atlas-concept-header {
+    margin: 0 0 0.45rem;
+    color: var(--atlas-accent) !important;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.73rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.atlas-concept-copy {
+    margin: 0;
+    color: var(--atlas-text-soft) !important;
+    line-height: 1.58;
+}
+
+.atlas-concept-video-note {
+    margin-top: 0.35rem;
+    color: var(--atlas-text-muted) !important;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+}
 """
 
 
@@ -1271,14 +1400,19 @@ def render_overview(df: pd.DataFrame) -> None:
 
 
 def apply_section_query_parameter() -> None:
-    """Permite abrir la sección de métodos desde el indicador superior."""
+    """Permite abrir secciones concretas desde enlaces internos de la app."""
     try:
         requested = st.query_params.get("section")
     except Exception:
         requested = None
 
-    if requested == "metodos-deteccion":
-        st.session_state["main_section"] = "Métodos de detección"
+    section_map = {
+        "metodos-deteccion": "Métodos de detección",
+        "guia-visual": "Guía visual",
+    }
+
+    if requested in section_map:
+        st.session_state["main_section"] = section_map[requested]
         try:
             st.query_params.clear()
         except Exception:
@@ -1357,6 +1491,117 @@ def render_detection_methods(df: pd.DataFrame) -> None:
                 st.markdown("**Ejemplos destacados**")
                 for example in method["examples"]:
                     st.markdown(f"- {example}")
+
+
+
+def render_concept(concept: dict[str, object], *, compact: bool = False) -> None:
+    """Renderiza una cápsula conceptual con video y explicación breve."""
+    video_path = CONCEPT_VIDEO_DIR / str(concept["video"])
+
+    if compact:
+        video_col, info_col = st.columns([1.0, 1.15], vertical_alignment="center")
+    else:
+        video_col, info_col = st.columns([1.05, 1.25], vertical_alignment="center")
+
+    with video_col:
+        if video_path.exists():
+            st.video(str(video_path), autoplay=False, loop=True, muted=True)
+        else:
+            st.info(
+                f"Animación pendiente: `{concept['video']}`. "
+                "Renderiza el script Manim correspondiente y copia el MP4 a `assets/conceptos`."
+            )
+
+    with info_col:
+        st.markdown(
+            f'<p class="atlas-concept-header">{concept["group"]}</p>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(f"### {concept['title']}")
+        st.write(concept["summary"])
+        for point in concept["points"]:
+            st.markdown(f"- {point}")
+
+
+def render_visual_guide() -> None:
+    """Sección principal para aprender los conceptos que aparecen en el Atlas."""
+    st.markdown('<div id="guia-visual"></div>', unsafe_allow_html=True)
+    st.subheader("Guía visual de conceptos")
+    st.caption(
+        "Estas animaciones explican el vocabulario que aparece en los gráficos y tablas. "
+        "La idea es poder consultar un concepto y volver inmediatamente al análisis del catálogo."
+    )
+
+    group = st.segmented_control(
+        "Tipo de concepto",
+        options=["Fundamentos", "Parámetros orbitales"],
+        default="Fundamentos",
+        key="visual_guide_group",
+        label_visibility="collapsed",
+    ) if hasattr(st, "segmented_control") else st.radio(
+        "Tipo de concepto",
+        options=["Fundamentos", "Parámetros orbitales"],
+        horizontal=True,
+        key="visual_guide_group",
+        label_visibility="collapsed",
+    )
+
+    visible = [concept for concept in CONCEPTS if concept["group"] == group]
+    guide_key = (
+        "visual_guide_concept_fundamentos"
+        if group == "Fundamentos"
+        else "visual_guide_concept_parametros"
+    )
+    selected_title = st.selectbox(
+        "Concepto",
+        options=[concept["title"] for concept in visible],
+        key=guide_key,
+        help="Selecciona un concepto para ver su animación y una explicación breve.",
+    )
+
+    concept = next(concept for concept in visible if concept["title"] == selected_title)
+    with st.container(border=True):
+        render_concept(concept)
+
+    st.caption(
+        "Consejo: en Exploración orbital, la app también muestra automáticamente los conceptos "
+        "relacionados con los ejes que estés usando."
+    )
+
+
+def render_contextual_orbital_guide(x_axis: str, y_axis: str) -> None:
+    """Muestra solo los conceptos que ayudan a interpretar los ejes activos."""
+    concept_ids = ["orbita"]
+    for column in (x_axis, y_axis):
+        concept_id = CONCEPT_BY_COLUMN.get(column)
+        if concept_id and concept_id not in concept_ids:
+            concept_ids.append(concept_id)
+
+    concepts = [CONCEPT_BY_ID[concept_id] for concept_id in concept_ids]
+
+    with st.expander("Guía visual · entender los parámetros de este gráfico", expanded=False):
+        selected_title = st.selectbox(
+            "Concepto relacionado",
+            options=[concept["title"] for concept in concepts],
+            key=f"context_concept_{x_axis}_{y_axis}",
+            label_visibility="collapsed",
+        )
+        concept = next(concept for concept in concepts if concept["title"] == selected_title)
+        render_concept(concept, compact=True)
+
+
+def render_system_concept_guide() -> None:
+    """Ayuda conceptual breve para la sección de sistemas destacados."""
+    concepts = [CONCEPT_BY_ID["sistema-planetario"], CONCEPT_BY_ID["exoplaneta"]]
+    with st.expander("Guía visual · sistema planetario y exoplaneta", expanded=False):
+        selected_title = st.selectbox(
+            "Concepto de sistema",
+            options=[concept["title"] for concept in concepts],
+            key="system_concept_guide",
+            label_visibility="collapsed",
+        )
+        concept = next(concept for concept in concepts if concept["title"] == selected_title)
+        render_concept(concept, compact=True)
 
 
 def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str], tuple[int, int], list[str], str, bool, str, bool, str, str]:
@@ -1540,6 +1785,8 @@ def render_visual_explorer(
 
         st.plotly_chart(figure, use_container_width=True, config=PLOTLY_CONFIG)
 
+    render_contextual_orbital_guide(x_axis, y_axis)
+
 
 def render_top_systems(
     filtered: pd.DataFrame,
@@ -1658,6 +1905,7 @@ def render_top_systems(
     st.divider()
     st.markdown("<div style='height:0.35rem'></div>", unsafe_allow_html=True)
     st.subheader("Análisis de un sistema específico")
+    render_system_concept_guide()
 
     if system_summary.empty:
         st.warning("No hay sistemas disponibles con los filtros actuales.")
@@ -1881,10 +2129,19 @@ def reset_atlas_state() -> None:
         "selected_hosts",
         "selected_top_system",
         "detection_method_view",
+        "visual_guide_group",
+        "visual_guide_concept_fundamentos",
+        "visual_guide_concept_parametros",
+        "system_concept_guide",
         "main_section",
     ]
     for key in keys_to_reset:
         st.session_state.pop(key, None)
+
+    # Los selectores contextuales usan una clave que depende de los ejes activos.
+    for key in list(st.session_state.keys()):
+        if str(key).startswith("context_concept_"):
+            st.session_state.pop(key, None)
 
     try:
         st.query_params.clear()
@@ -1995,6 +2252,10 @@ def main() -> None:
 
     if section == "Métodos de detección":
         render_detection_methods(df)
+        return
+
+    if section == "Guía visual":
+        render_visual_guide()
         return
 
     if filtered.empty:
