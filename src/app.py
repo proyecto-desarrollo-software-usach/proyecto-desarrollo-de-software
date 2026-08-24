@@ -24,6 +24,13 @@ PLOTLY_CONFIG = {
 # a las 08:00 (hora de Chile) utiliza una nueva clave de caché y consulta NASA.
 CATALOG_REFRESH_HOUR = 8
 CATALOG_TIMEZONE = "America/Santiago"
+APP_THEME = "dark"
+THEME_MODES = ["Sistema", "Claro", "Oscuro"]
+LEGACY_THEME_MODES = {
+    "System": "Sistema",
+    "Light": "Claro",
+    "Dark": "Oscuro",
+}
 
 THEME_TOKENS = {
     "dark": {
@@ -482,7 +489,7 @@ TABLE_COLUMN_LABELS = {
 }
 
 BASE_CSS = r"""
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anybody:ital,wdth,wght@0,75..125,400..800;1,75..125,500..800&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 html, body, [class*="css"] {
     font-family: 'IBM Plex Sans', sans-serif;
@@ -652,37 +659,6 @@ p, label, li,
     gap: 0.9rem;
 }
 
-/* Sidebar */
-[data-testid="stSidebar"] {
-    background: var(--atlas-bg-alt) !important;
-    border-right: 1px solid var(--atlas-border) !important;
-}
-
-[data-testid="stSidebar"] h1,
-[data-testid="stSidebar"] h2,
-[data-testid="stSidebar"] h3,
-[data-testid="stSidebar"] h4 {
-    color: var(--atlas-text) !important;
-}
-
-[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
-[data-testid="stSidebar"] label,
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p,
-[data-testid="stSidebar"] span {
-    color: var(--atlas-text-soft) !important;
-}
-
-[data-testid="stSidebar"] h3 {
-    margin-top: 0.3rem;
-    margin-bottom: 0.7rem;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.88rem;
-    font-weight: 600;
-    letter-spacing: 0.055em;
-    text-transform: uppercase;
-}
-
-[data-testid="stSidebar"] hr,
 hr {
     border-color: var(--atlas-border) !important;
 }
@@ -705,11 +681,6 @@ div[data-baseweb="menu"] li {
 div[data-baseweb="menu"] li:hover {
     background: var(--atlas-surface-hover) !important;
     color: var(--atlas-text) !important;
-}
-
-[data-testid="stSidebar"] input::placeholder {
-    color: var(--atlas-text-muted) !important;
-    opacity: 1;
 }
 
 /* Botones sobrios, con geometría menos genérica. */
@@ -1047,7 +1018,7 @@ html {
 }
 
 html, body, [class*="css"] {
-    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .stApp {
@@ -1076,8 +1047,7 @@ html, body, [class*="css"] {
 }
 
 [data-testid="stAppViewContainer"],
-[data-testid="stMain"],
-[data-testid="stSidebar"] {
+[data-testid="stMain"] {
     position: relative;
     z-index: 1;
 }
@@ -1088,7 +1058,12 @@ html, body, [class*="css"] {
     backdrop-filter: blur(14px);
 }
 
-[data-testid="stToolbar"],
+[data-testid="stToolbar"] {
+    visibility: visible !important;
+}
+
+[data-testid="stToolbarActions"],
+[data-testid="stAppDeployButton"],
 #MainMenu,
 footer {
     visibility: hidden;
@@ -1105,7 +1080,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1, h2 {
-    font-family: 'Newsreader', Georgia, serif;
+    font-family: 'Anybody', 'Arial Black', sans-serif;
     font-weight: 600;
 }
 
@@ -1119,9 +1094,10 @@ p, li {
     display: grid;
     grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
     align-items: center;
-    min-height: 430px;
+    box-sizing: border-box;
+    min-height: 380px;
     margin-bottom: 1.35rem;
-    padding: clamp(2rem, 5vw, 4.8rem);
+    padding: clamp(2rem, 4vw, 3.6rem);
     overflow: hidden;
     background:
         linear-gradient(112deg, color-mix(in srgb, var(--atlas-surface) 97%, transparent), color-mix(in srgb, var(--atlas-bg-alt) 91%, transparent));
@@ -1146,7 +1122,7 @@ p, li {
     width: 7rem;
     height: 5px;
     background: var(--atlas-accent);
-    box-shadow: calc(100vw - 7rem) calc(430px - 5px) 0 var(--atlas-accent-2);
+    box-shadow: none;
 }
 
 .hero-layout,
@@ -1177,17 +1153,19 @@ p, li {
 .hero h1 {
     max-width: 760px;
     margin: 0 0 1.15rem;
-    font-size: clamp(3rem, 6.3vw, 5.7rem);
-    font-weight: 600;
-    line-height: 0.88;
-    letter-spacing: -0.055em;
+    font-size: clamp(2.8rem, 5.3vw, 4.9rem);
+    font-variation-settings: 'wdth' 118, 'wght' 760;
+    font-weight: 760;
+    line-height: 0.84;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
 }
 
 .hero h1 span {
     display: block;
     color: var(--atlas-accent-soft);
-    font-style: italic;
-    font-weight: 500;
+    font-style: normal;
+    font-weight: 760;
 }
 
 .hero p {
@@ -1207,6 +1185,23 @@ p, li {
     border: 1px solid var(--atlas-border);
     border-radius: 999px;
     background: color-mix(in srgb, var(--atlas-surface-strong) 72%, transparent);
+}
+
+.hero-action {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.66rem 0.82rem;
+    border: 1px solid var(--atlas-accent);
+    border-radius: 9px 2px 9px 2px;
+    color: var(--atlas-text) !important;
+    background: color-mix(in srgb, var(--atlas-accent) 10%, transparent);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-decoration: none !important;
+}
+
+.hero-action:hover {
+    background: color-mix(in srgb, var(--atlas-accent) 18%, transparent);
 }
 
 .hero-orbit {
@@ -1343,7 +1338,7 @@ p, li {
 .atlas-stat-value {
     display: block;
     color: var(--atlas-text);
-    font-family: 'Newsreader', Georgia, serif;
+    font-family: 'Anybody', 'Arial Black', sans-serif;
     font-size: clamp(2rem, 3.5vw, 3rem);
     font-weight: 600;
     line-height: 1;
@@ -1432,7 +1427,7 @@ a.atlas-stat .atlas-stat-note {
     min-height: 42px;
     border: 0 !important;
     border-radius: 9px !important;
-    font-family: 'Manrope', sans-serif !important;
+    font-family: 'Atkinson Hyperlegible', sans-serif !important;
     font-size: 0.78rem !important;
     font-weight: 650 !important;
     letter-spacing: 0 !important;
@@ -1548,54 +1543,257 @@ a.atlas-stat .atlas-stat-note {
     display: none;
 }
 
-/* Panel lateral: índice y mesa de control. */
-[data-testid="stSidebar"] {
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--atlas-bg-alt) 96%, transparent), color-mix(in srgb, var(--atlas-surface) 88%, transparent)) !important;
-}
-
-[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
-    padding-top: 1.25rem;
-}
-
-.sidebar-brand {
-    margin: 0.15rem 0 1.1rem;
-    padding: 0.2rem 0.1rem 1rem;
-    border-bottom: 1px solid var(--atlas-border);
-}
-
-.sidebar-brand span {
-    display: block;
-    color: var(--atlas-accent) !important;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.64rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-.sidebar-brand strong {
-    display: block;
-    margin-top: 0.35rem;
-    color: var(--atlas-text);
-    font-family: 'Newsreader', Georgia, serif;
-    font-size: 1.45rem;
-    font-weight: 600;
-}
-
-[data-testid="stSidebar"] h3 {
-    margin-top: 0.85rem;
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-}
-
-[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {
-    font-size: 0.78rem;
-    font-weight: 650;
-}
-
 [data-testid="stVideo"] video {
     border-radius: 12px 2px 12px 2px;
     box-shadow: 0 18px 44px -35px var(--atlas-shadow);
+}
+
+/* Panel del gráfico dentro del flujo principal. */
+.atlas-control-guide {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin-bottom: 0.35rem;
+}
+
+.atlas-control-step {
+    padding: 0.72rem 0.8rem;
+    border: 1px solid var(--atlas-border);
+    border-radius: 9px 2px 9px 2px;
+    background: color-mix(in srgb, var(--atlas-bg-alt) 72%, transparent);
+    color: var(--atlas-text-soft);
+    font-size: 0.76rem;
+    line-height: 1.35;
+}
+
+.atlas-control-step strong {
+    display: block;
+    margin-bottom: 0.16rem;
+    color: var(--atlas-accent-2);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.63rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.atlas-learning-card {
+    position: relative;
+    margin: 0.75rem 0 0.2rem;
+    padding: 1rem 1.05rem 1rem 1.2rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--atlas-accent) 52%, var(--atlas-border));
+    border-radius: 2px 14px 2px 14px;
+    background: color-mix(in srgb, var(--atlas-accent) 7%, var(--atlas-surface));
+}
+
+.atlas-learning-card::before {
+    content: '?';
+    position: absolute;
+    right: 0.8rem;
+    top: -1.2rem;
+    color: color-mix(in srgb, var(--atlas-accent) 14%, transparent);
+    font-family: 'Anybody', sans-serif;
+    font-size: 7rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.atlas-learning-card span {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: var(--atlas-accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+.atlas-learning-card strong {
+    position: relative;
+    z-index: 1;
+    display: block;
+    max-width: 900px;
+    color: var(--atlas-text);
+    font-size: 0.94rem;
+    line-height: 1.5;
+}
+
+.atlas-learning-card small {
+    position: relative;
+    z-index: 1;
+    display: block;
+    max-width: 900px;
+    margin-top: 0.35rem;
+    color: var(--atlas-text-muted);
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+.atlas-learning-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0.75rem 0 0.2rem;
+}
+
+.atlas-learning-grid .atlas-learning-card {
+    height: 100%;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.atlas-reading-card {
+    position: relative;
+    height: 100%;
+    padding: 1rem 1.05rem 1rem 1.2rem;
+    overflow: hidden;
+    box-sizing: border-box;
+    border: 1px solid color-mix(in srgb, var(--atlas-accent-2) 58%, var(--atlas-border));
+    border-radius: 14px 2px 14px 2px;
+    background: color-mix(in srgb, var(--atlas-accent-2) 7%, var(--atlas-surface));
+}
+
+.atlas-reading-card::before {
+    content: '↔';
+    position: absolute;
+    right: 0.8rem;
+    top: -1.1rem;
+    color: color-mix(in srgb, var(--atlas-accent-2) 14%, transparent);
+    font-family: 'Anybody', sans-serif;
+    font-size: 6.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.atlas-reading-card span {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: var(--atlas-accent-2);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+.atlas-reading-card strong,
+.atlas-reading-card small {
+    position: relative;
+    z-index: 1;
+    display: block;
+    max-width: 900px;
+}
+
+.atlas-reading-card strong {
+    color: var(--atlas-text);
+    font-size: 0.94rem;
+    line-height: 1.5;
+}
+
+.atlas-reading-card small {
+    margin-top: 0.35rem;
+    color: var(--atlas-text-muted);
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 840px) {
+    .atlas-learning-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Barra propia de apariencia: sustituye al menú y a la barra lateral de Streamlit. */
+[data-testid="stHeader"] {
+    min-height: 0 !important;
+    height: 0 !important;
+    border: 0 !important;
+}
+
+[data-testid="stToolbar"] {
+    display: none !important;
+}
+
+.block-container {
+    padding-top: 0.8rem;
+}
+
+.st-key-atlas_topbar {
+    position: sticky;
+    top: 0.45rem;
+    z-index: 950;
+    margin-bottom: 0.25rem;
+    padding: 0.48rem 0.58rem 0.48rem 0.8rem;
+    border: 1px solid color-mix(in srgb, var(--atlas-border) 82%, transparent);
+    border-radius: 10px 2px 10px 2px;
+    background: color-mix(in srgb, var(--atlas-bg) 88%, transparent);
+    box-shadow: 0 16px 34px -30px var(--atlas-shadow);
+    backdrop-filter: blur(18px);
+}
+
+.st-key-atlas_topbar [data-testid="stHorizontalBlock"] {
+    gap: 0.65rem;
+}
+
+.atlas-topbar-mark {
+    color: var(--atlas-text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+}
+
+.st-key-atlas_topbar [data-testid="stSegmentedControl"] {
+    position: static;
+    top: auto;
+    margin: 0;
+    padding: 0.18rem;
+    border-radius: 8px;
+    background: var(--atlas-surface);
+}
+
+.st-key-atlas_filter_station {
+    margin: 0.2rem 0 0.85rem;
+}
+
+.st-key-atlas_filter_station [data-testid="stVerticalBlockBorderWrapper"] {
+    border-left: 4px solid var(--atlas-accent-2) !important;
+    background:
+        linear-gradient(100deg, color-mix(in srgb, var(--atlas-accent-2) 5%, transparent), transparent 34%),
+        var(--atlas-surface) !important;
+}
+
+.filter-station-title span {
+    display: block;
+    margin-bottom: 0.16rem;
+    color: var(--atlas-accent-2);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.filter-station-title strong {
+    display: block;
+    color: var(--atlas-text);
+    font-family: 'Anybody', sans-serif;
+    font-size: 1.18rem;
+    font-weight: 600;
+}
+
+[data-testid="stPills"] button {
+    border: 1px solid var(--atlas-border) !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    color: var(--atlas-text-soft) !important;
+}
+
+[data-testid="stPills"] button[aria-pressed="true"] {
+    border-color: var(--atlas-accent-2) !important;
+    background: color-mix(in srgb, var(--atlas-accent-2) 14%, var(--atlas-surface)) !important;
+    color: var(--atlas-text) !important;
 }
 
 /* Accesibilidad y movimiento. */
@@ -1649,6 +1847,14 @@ a.atlas-stat .atlas-stat-note {
     .hero-orbit { display: none; }
     .hero-meta span { font-size: 0.59rem; }
 
+    .st-key-atlas_topbar {
+        position: relative;
+        top: auto;
+        padding: 0.42rem;
+    }
+
+    .atlas-topbar-mark { display: none; }
+
     .atlas-snapshot-head {
         align-items: flex-start;
         flex-direction: column;
@@ -1676,6 +1882,10 @@ a.atlas-stat .atlas-stat-note {
     [data-testid="stSegmentedControl"] > div {
         min-width: max-content;
     }
+
+    .atlas-control-guide {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 420px) {
@@ -1683,6 +1893,194 @@ a.atlas-stat .atlas-stat-note {
     .atlas-stat,
     .atlas-stat:nth-child(2) { border-right: 0; border-bottom: 1px solid var(--atlas-border); }
     .atlas-stat:last-child { border-bottom: 0; }
+}
+"""
+
+
+CONTROL_THEME_CSS = r"""
+/*
+   Streamlit conserva parte de los colores definidos en config.toml cuando el
+   tema se cambia durante la sesión. Estas reglas hacen que cada control use
+   las mismas variables que el resto de la interfaz.
+*/
+[data-baseweb="button-group"]:has(button[data-testid^="stBaseButton-segmented_control"]) {
+    overflow: hidden;
+    background: var(--atlas-surface) !important;
+    border: 1px solid var(--atlas-border) !important;
+}
+
+button[data-testid="stBaseButton-segmented_control"],
+button[data-testid="stBaseButton-segmented_controlActive"] {
+    background: var(--atlas-surface) !important;
+    color: var(--atlas-text-soft) !important;
+    border-color: var(--atlas-border) !important;
+    box-shadow: none !important;
+}
+
+button[data-testid="stBaseButton-segmented_controlActive"] {
+    background: color-mix(in srgb, var(--atlas-accent) 12%, var(--atlas-surface-strong)) !important;
+    color: var(--atlas-text) !important;
+    border-color: var(--atlas-accent) !important;
+    box-shadow: inset 0 0 0 1px var(--atlas-accent) !important;
+    font-weight: 700 !important;
+}
+
+button[data-testid="stBaseButton-segmented_control"]:hover,
+button[data-testid="stBaseButton-segmented_controlActive"]:hover {
+    background: var(--atlas-surface-hover) !important;
+    color: var(--atlas-text) !important;
+}
+
+button[data-testid="stBaseButton-secondary"],
+button[data-testid="stBaseButton-primary"],
+button[data-testid="stBaseButton-secondaryFormSubmit"],
+button[data-testid="stBaseButton-primaryFormSubmit"] {
+    background: var(--atlas-surface-strong) !important;
+    color: var(--atlas-text) !important;
+    border-color: var(--atlas-border-strong) !important;
+}
+
+button[data-testid="stBaseButton-secondary"]:hover,
+button[data-testid="stBaseButton-primary"]:hover,
+button[data-testid="stBaseButton-secondaryFormSubmit"]:hover,
+button[data-testid="stBaseButton-primaryFormSubmit"]:hover {
+    background: var(--atlas-surface-hover) !important;
+    color: var(--atlas-text) !important;
+    border-color: var(--atlas-accent) !important;
+}
+
+button[data-testid="stBaseButton-pills"],
+button[data-testid="stBaseButton-pillsActive"] {
+    background: var(--atlas-surface) !important;
+    color: var(--atlas-text-soft) !important;
+    border-color: var(--atlas-border) !important;
+}
+
+button[data-testid="stBaseButton-pillsActive"] {
+    background: color-mix(in srgb, var(--atlas-accent) 11%, var(--atlas-surface)) !important;
+    color: var(--atlas-text) !important;
+    border-color: var(--atlas-accent) !important;
+    font-weight: 700 !important;
+}
+
+button[data-testid^="stBaseButton-"] p {
+    color: inherit !important;
+}
+
+button[data-testid="stBaseButton-secondary"]:disabled,
+button[data-testid="stBaseButton-primary"]:disabled {
+    background: var(--atlas-surface-strong) !important;
+    color: var(--atlas-text-soft) !important;
+    border-color: var(--atlas-border) !important;
+    opacity: 1 !important;
+    cursor: not-allowed;
+}
+
+button[data-testid^="stBaseButton-"]:focus-visible,
+[data-baseweb="button-group"] button:focus-visible {
+    outline: 2px solid var(--atlas-accent-2) !important;
+    outline-offset: 2px !important;
+}
+
+[data-baseweb="select"] > div,
+[data-baseweb="base-input"],
+[data-testid="stTextInput"] input,
+[data-testid="stNumberInput"] input {
+    background: var(--atlas-surface-strong) !important;
+    color: var(--atlas-text) !important;
+    border-color: var(--atlas-border-strong) !important;
+}
+
+[data-testid="stTextInput"] input::placeholder,
+[data-testid="stNumberInput"] input::placeholder {
+    color: var(--atlas-text-muted) !important;
+    opacity: 1 !important;
+}
+
+[data-baseweb="select"] svg,
+[data-testid="stTextInput"] svg,
+[data-testid="stNumberInput"] svg {
+    color: var(--atlas-text-soft) !important;
+}
+
+[data-baseweb="select"] input,
+[data-baseweb="select"] div {
+    color: var(--atlas-text-soft) !important;
+    caret-color: var(--atlas-text) !important;
+}
+
+[data-baseweb="tag"] {
+    background: color-mix(in srgb, var(--atlas-accent-2) 13%, var(--atlas-surface)) !important;
+    color: var(--atlas-text) !important;
+    border-color: var(--atlas-border) !important;
+}
+
+label[data-baseweb="checkbox"] > div:first-child,
+label[data-baseweb="radio"] > div:first-child {
+    background: var(--atlas-surface-strong) !important;
+    border-color: var(--atlas-border-strong) !important;
+}
+
+label[data-baseweb="checkbox"]:has(input:checked) > div:first-child {
+    background: var(--atlas-accent-2) !important;
+    border-color: var(--atlas-accent-2) !important;
+}
+
+label[data-baseweb="checkbox"] > div:first-child > div {
+    background: var(--atlas-surface) !important;
+}
+
+label[data-baseweb="radio"] > div:first-child > div {
+    background: transparent !important;
+}
+
+label[data-baseweb="radio"]:has(input:checked) > div:first-child {
+    background: var(--atlas-surface) !important;
+    border-color: var(--atlas-accent-2) !important;
+}
+
+label[data-baseweb="radio"]:has(input:checked) > div:first-child > div {
+    background: var(--atlas-accent-2) !important;
+}
+
+label[data-baseweb="checkbox"],
+label[data-baseweb="radio"],
+label[data-baseweb="checkbox"] p,
+label[data-baseweb="radio"] p {
+    color: var(--atlas-text-soft) !important;
+}
+
+[data-testid="stTooltipIcon"] [data-testid="stTooltipHoverTarget"] svg {
+    color: var(--atlas-text-muted) !important;
+}
+
+[data-testid="stSliderThumbValue"],
+[data-testid="stSliderTickBar"] {
+    color: var(--atlas-text-muted) !important;
+}
+
+[data-testid="stAlert"],
+[data-testid="stDataFrame"] {
+    background: var(--atlas-surface) !important;
+    color: var(--atlas-text) !important;
+    border-color: var(--atlas-border) !important;
+}
+
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] > div,
+[role="listbox"] {
+    background: var(--atlas-surface-strong) !important;
+    color: var(--atlas-text) !important;
+    border-color: var(--atlas-border) !important;
+}
+
+[role="option"] {
+    color: var(--atlas-text) !important;
+}
+
+[role="option"]:hover,
+[aria-selected="true"][role="option"] {
+    background: var(--atlas-surface-hover) !important;
 }
 """
 
@@ -1716,6 +2114,57 @@ PRESETS = {
         "log_x": False,
         "log_y": True,
     },
+    "Radio según la masa": {
+        "x": "pl_bmasse",
+        "y": "pl_rade",
+        "color": "discoverymethod",
+        "log_x": True,
+        "log_y": True,
+    },
+    "Excentricidad según el período": {
+        "x": "pl_orbper",
+        "y": "pl_orbeccen",
+        "color": "st_teff",
+        "log_x": True,
+        "log_y": False,
+    },
+}
+
+PRESET_SHORT_LABELS = {
+    "Masa según el semieje mayor": "Órbita y masa",
+    "Radio según el semieje mayor": "Órbita y tamaño",
+    "Semieje mayor según el período": "Período y distancia",
+    "Radio según la temperatura estelar": "Estrella y planeta",
+    "Radio según la masa": "Masa y radio",
+    "Excentricidad según el período": "Forma de la órbita",
+}
+
+
+LEARNING_QUESTIONS = {
+    "Masa según el semieje mayor": (
+        "¿Los planetas más masivos suelen estar más lejos de su estrella?",
+        "Busca grupos, excepciones y zonas vacías. Recuerda que los métodos de detección también influyen en lo que alcanzamos a observar.",
+    ),
+    "Radio según el semieje mayor": (
+        "¿Cambian los tamaños planetarios a medida que aumenta la distancia orbital?",
+        "Compara los puntos por método. Un patrón aparente puede reflejar cómo detectamos los planetas y no solo cómo se forman.",
+    ),
+    "Semieje mayor según el período": (
+        "¿Qué relación reconoces entre el período y el tamaño de una órbita?",
+        "Relaciona la nube de puntos con la tercera ley de Kepler: una órbita más extensa suele necesitar más tiempo para completarse.",
+    ),
+    "Radio según la temperatura estelar": (
+        "¿Aparecen los mismos tipos de planeta alrededor de estrellas frías y calientes?",
+        "Describe primero lo que ves; después propone una explicación y piensa qué datos faltan antes de concluir.",
+    ),
+    "Radio según la masa": (
+        "¿Duplicar la masa de un planeta significa duplicar su radio?",
+        "Busca mundos con masas parecidas y radios diferentes: la composición también importa.",
+    ),
+    "Excentricidad según el período": (
+        "¿Las órbitas de período corto tienden a ser más circulares?",
+        "Observa la concentración cerca de e = 0 y considera cómo las interacciones gravitatorias pueden cambiar una órbita.",
+    ),
 }
 
 
@@ -1723,18 +2172,43 @@ st.set_page_config(
     page_title="Atlas de Exoplanetas",
     page_icon="✦",
     layout="wide",
-    initial_sidebar_state="auto",
+    initial_sidebar_state="collapsed",
 )
 
 
-def get_active_theme() -> str:
-    """Devuelve el tema que Streamlit está mostrando realmente al usuario."""
-    try:
-        theme_type = st.context.theme.type
-    except Exception:
-        theme_type = "dark"
+def get_active_theme(theme_mode: str) -> str:
+    """Resuelve el modo elegido sin impedir que Sistema siga a Streamlit."""
+    if theme_mode == "Claro":
+        return "light"
+    if theme_mode == "Oscuro":
+        return "dark"
 
-    return theme_type if theme_type in {"light", "dark"} else "dark"
+    try:
+        context_theme = st.context.theme.type
+    except Exception:
+        context_theme = APP_THEME
+    return context_theme if context_theme in {"light", "dark"} else APP_THEME
+
+
+def render_theme_selector() -> str:
+    """Deja la apariencia disponible sin depender del menú de Streamlit."""
+    with st.container(key="atlas_topbar"):
+        identity_col, mode_col = st.columns([1.65, 1], vertical_alignment="center")
+        with identity_col:
+            st.markdown(
+                '<span class="atlas-topbar-mark">ATLAS DE EXOPLANETAS</span>',
+                unsafe_allow_html=True,
+            )
+        with mode_col:
+            selected = st.segmented_control(
+                "Modo visual",
+                options=THEME_MODES,
+                key="theme_mode",
+                required=True,
+                label_visibility="collapsed",
+                width="stretch",
+            )
+    return selected or "Sistema"
 
 
 def translate_discovery_method(value: object) -> str:
@@ -1749,6 +2223,7 @@ def apply_theme(theme_type: str) -> None:
     css_variables = "\n".join(
         [
             ":root {",
+            f"  color-scheme: {theme_type};",
             f"  --atlas-bg: {tokens['bg']};",
             f"  --atlas-bg-alt: {tokens['bg_alt']};",
             f"  --atlas-surface: {tokens['surface']};",
@@ -1770,7 +2245,7 @@ def apply_theme(theme_type: str) -> None:
     )
 
     st.markdown(
-        f"<style>{css_variables}\n{BASE_CSS}</style>",
+        f"<style>{css_variables}\n{BASE_CSS}\n{CONTROL_THEME_CSS}</style>",
         unsafe_allow_html=True,
     )
 
@@ -1819,6 +2294,73 @@ def get_catalog(refresh_key: str) -> pd.DataFrame:
 
 def format_axis_label(column: str, labels: dict[str, str]) -> str:
     return DEFAULT_COLUMN_LABELS.get(column, labels.get(column, column))
+
+
+def build_visualization_prompts(
+    x_axis: str,
+    y_axis: str,
+    color_mode: str,
+    size_mode: str,
+    log_x: bool,
+    log_y: bool,
+    labels: dict[str, str],
+) -> tuple[str, str, str, str]:
+    """Construye ayudas que siempre describen la visualización activa."""
+    x_label = format_axis_label(x_axis, labels)
+    y_label = format_axis_label(y_axis, labels)
+    x_phrase = x_label[:1].lower() + x_label[1:]
+    y_phrase = y_label[:1].lower() + y_label[1:]
+
+    reading_question = (
+        f"¿Cómo se lee {y_phrase} frente a {x_phrase}?"
+    )
+
+    if color_mode == "none":
+        color_note = "El color no añade una tercera variable."
+    elif color_mode == "discoverymethod":
+        color_note = "El color distingue los métodos de descubrimiento."
+    else:
+        color_label = format_axis_label(color_mode, labels)
+        color_phrase = color_label[:1].lower() + color_label[1:]
+        color_note = (
+            f"El color añade {color_phrase} como tercera variable."
+        )
+
+    if size_mode == "system":
+        size_note = "Las marcas más grandes pertenecen a sistemas con más planetas registrados."
+    else:
+        size_note = "Todas las marcas tienen el mismo tamaño para facilitar la comparación."
+
+    if log_x and log_y:
+        scale_note = "Ambos ejes son logarítmicos: cada salto representa una multiplicación."
+    elif log_x:
+        scale_note = "El eje horizontal es logarítmico: cada salto representa una multiplicación."
+    elif log_y:
+        scale_note = "El eje vertical es logarítmico: cada salto representa una multiplicación."
+    else:
+        scale_note = "Ambos ejes usan una escala lineal."
+
+    reading_hint = (
+        f"El eje horizontal ordena {x_phrase} y el vertical muestra "
+        f"{y_phrase}. {color_note} {size_note} {scale_note}"
+    )
+
+    matching_preset = next(
+        (
+            preset_name
+            for preset_name, preset in PRESETS.items()
+            if preset["x"] == x_axis and preset["y"] == y_axis
+        ),
+        None,
+    )
+    research_question, research_hint = LEARNING_QUESTIONS.get(
+        matching_preset,
+        (
+            f"¿Qué ocurre con {y_phrase} cuando cambia {x_phrase}?",
+            "Describe primero la dirección, la dispersión y las excepciones. Después intenta explicarlas sin confundir correlación con causa.",
+        ),
+    )
+    return reading_question, reading_hint, research_question, research_hint
 
 
 def format_count(value: int) -> str:
@@ -2079,19 +2621,19 @@ def render_overview(df: pd.DataFrame) -> None:
         f"""
         <section class="atlas-snapshot" aria-label="Resumen del catálogo">
             <div class="atlas-snapshot-head">
-                <span>El universo conocido, en cifras</span>
-                <span>Catálogo confirmado · disponible</span>
+                <span>Lo que quedó en la selección</span>
+                <span>Las cifras cambian con los filtros</span>
             </div>
             <div class="atlas-stat-grid">
                 <div class="atlas-stat">
                     <span class="atlas-stat-label">Exoplanetas confirmados</span>
                     <strong class="atlas-stat-value">{format_count(len(df))}</strong>
-                    <span class="atlas-stat-note">Mundos con registro activo</span>
+                    <span class="atlas-stat-note">Filas visibles del catálogo</span>
                 </div>
                 <div class="atlas-stat">
                     <span class="atlas-stat-label">Sistemas estelares</span>
                     <strong class="atlas-stat-value">{format_count(total_systems)}</strong>
-                    <span class="atlas-stat-note">Estrellas anfitrionas únicas</span>
+                    <span class="atlas-stat-note">Estrellas distintas</span>
                 </div>
                 <div class="atlas-stat">
                     <span class="atlas-stat-label">Sistemas múltiples</span>
@@ -2101,7 +2643,7 @@ def render_overview(df: pd.DataFrame) -> None:
                 <a class="atlas-stat" href="?section=metodos-deteccion#metodos-deteccion" target="_self">
                     <span class="atlas-stat-label">Métodos de detección</span>
                     <strong class="atlas-stat-value">{method_count}</strong>
-                    <span class="atlas-stat-note">Conocer las técnicas →</span>
+                    <span class="atlas-stat-note">Ver cómo se detectaron →</span>
                 </a>
             </div>
         </section>
@@ -2137,6 +2679,7 @@ def render_main_navigation() -> str:
             "Sección principal",
             options=MAIN_SECTIONS,
             key="main_section",
+            required=True,
             label_visibility="collapsed",
         )
         return selected or st.session_state.get("main_section", MAIN_SECTIONS[0])
@@ -2154,17 +2697,17 @@ def render_detection_methods(df: pd.DataFrame) -> None:
     render_section_heading(
         "05 · Cómo los encontramos",
         "Métodos de detección",
-        "Un exoplaneta casi nunca se ve a simple vista. Estas animaciones conectan cada "
-        "fenómeno físico con la señal que los astrónomos observan y miden.",
+        "La mayoría no aparece en una fotografía. Se reconoce por el efecto que produce "
+        "en su estrella o en la luz que llega hasta nosotros.",
         anchor="metodos-deteccion",
     )
 
     method_titles = [method["title"] for method in DETECTION_METHODS]
     selected_method = st.selectbox(
-        "Técnica que quieres explorar",
+        "Técnica",
         options=["Todos", *method_titles],
         key="detection_method_view",
-        help="Elige una técnica concreta o recorre las once disponibles.",
+        help="Muestra una técnica concreta o las once juntas.",
     )
 
     visible_methods = (
@@ -2244,8 +2787,7 @@ def render_visual_guide() -> None:
     render_section_heading(
         "04 · Antes de comparar",
         "Guía visual de conceptos",
-        "Una introducción breve al vocabulario del Atlas. Consulta una idea, mira cómo "
-        "funciona y vuelve al catálogo con una lectura más clara.",
+        "Seis animaciones breves para entender las palabras que aparecen en los ejes y fichas.",
         anchor="guia-visual",
     )
 
@@ -2254,6 +2796,7 @@ def render_visual_guide() -> None:
         options=["Fundamentos", "Parámetros orbitales"],
         default="Fundamentos",
         key="visual_guide_group",
+        required=True,
         label_visibility="collapsed",
     ) if hasattr(st, "segmented_control") else st.radio(
         "Tipo de concepto",
@@ -2263,26 +2806,35 @@ def render_visual_guide() -> None:
         label_visibility="collapsed",
     )
 
+    if group not in {"Fundamentos", "Parámetros orbitales"}:
+        group = "Fundamentos"
+
     visible = [concept for concept in CONCEPTS if concept["group"] == group]
     guide_key = (
         "visual_guide_concept_fundamentos"
         if group == "Fundamentos"
         else "visual_guide_concept_parametros"
     )
+    visible_titles = [concept["title"] for concept in visible]
+    if st.session_state.get(guide_key) not in visible_titles:
+        st.session_state.pop(guide_key, None)
+
     selected_title = st.selectbox(
         "Concepto",
-        options=[concept["title"] for concept in visible],
+        options=visible_titles,
         key=guide_key,
         help="Selecciona un concepto para ver su animación y una explicación breve.",
     )
 
-    concept = next(concept for concept in visible if concept["title"] == selected_title)
+    concept = next(
+        (concept for concept in visible if concept["title"] == selected_title),
+        visible[0],
+    )
     with st.container(border=True):
         render_concept(concept)
 
     st.caption(
-        "En Exploración orbital también encontrarás una guía contextual con los conceptos "
-        "relacionados con los ejes que tengas activos."
+        "Exploración orbital muestra una ayuda breve para los ejes que estén activos."
     )
 
 
@@ -2321,81 +2873,83 @@ def render_system_concept_guide() -> None:
         render_concept(concept, compact=True)
 
 
-def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str], tuple[int, int], list[str], str, bool, str, bool, str, str]:
-    with st.sidebar:
-        st.markdown(
-            """
-            <div class="sidebar-brand">
-                <span>Mesa de observación</span>
-                <strong>Configura tu mapa</strong>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        st.button(
-            "↺ Restablecer exploración",
-            key="atlas_home_reset_sidebar",
-            width="stretch",
-            help="Volver al inicio y restaurar filtros, búsquedas y controles.",
-            on_click=reset_atlas_state,
-        )
-        st.markdown("### Punto de partida")
+def render_filter_station(df: pd.DataFrame) -> tuple[list[str], tuple[int, int], list[str]]:
+    """Reúne los filtros en el contenido principal y conserva el scroll de la página."""
+    min_planets = int(df["system_planet_count"].min())
+    max_planets = int(df["system_planet_count"].max())
+    if "show_all_methods" not in st.session_state:
+        st.session_state["show_all_methods"] = True
 
-        st.selectbox(
-            "Relación sugerida",
-            options=list(PRESETS.keys()),
-            key="preset",
-            on_change=lambda: set_preset_state(st.session_state["preset"]),
-            help="Carga una combinación de ejes, color y escala lista para explorar.",
-        )
+    saved_planet_range = st.session_state.get("planet_count_range")
+    valid_planet_range = (
+        isinstance(saved_planet_range, (tuple, list))
+        and len(saved_planet_range) == 2
+        and min_planets <= saved_planet_range[0] <= saved_planet_range[1] <= max_planets
+    )
+    if not valid_planet_range:
+        st.session_state["planet_count_range"] = (min_planets, max_planets)
 
-        st.divider()
-        st.markdown("### Filtros del catálogo")
+    method_options = sorted(df["discoverymethod"].dropna().unique().tolist())
+    host_options = sorted(df["hostname"].dropna().unique().tolist())
 
-        method_options = sorted(df["discoverymethod"].dropna().unique().tolist())
-
-        show_all_methods = st.toggle(
-            "Mostrar todos los métodos",
-            value=True,
-            key="show_all_methods",
-            help=(
-                "Incluye automáticamente todos los métodos de detección presentes "
-                "en el catálogo actual de NASA, incluidos los que se incorporen en el futuro."
-            ),
-        )
-
-        if show_all_methods:
-            methods = method_options
-            st.caption(f"Se incluyen automáticamente los {len(method_options)} métodos disponibles.")
-        else:
-            methods = st.multiselect(
-                "Métodos de descubrimiento",
-                options=method_options,
-                key="methods",
-                placeholder="Selecciona uno o más métodos",
-                format_func=translate_discovery_method,
+    with st.container(border=True, key="atlas_filter_station"):
+        title_col, reset_col = st.columns([4.2, 1], vertical_alignment="center")
+        with title_col:
+            st.markdown(
+                """
+                <div class="filter-station-title">
+                    <span>Ajuste del catálogo</span>
+                    <strong>Qué datos quieres ver</strong>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with reset_col:
+            st.button(
+                "Limpiar filtros",
+                key="atlas_filter_reset",
+                width="stretch",
+                help="Recupera el catálogo completo y los controles iniciales.",
+                on_click=reset_atlas_state,
+                args=((min_planets, max_planets),),
             )
 
-        min_planets = int(df["system_planet_count"].min())
-        max_planets = int(df["system_planet_count"].max())
-
-        planet_count_range = st.slider(
-            "Planetas por sistema",
-            min_value=min_planets,
-            max_value=max_planets,
-            value=(min_planets, max_planets),
-            key="planet_count_range",
+        method_col, count_col, search_col, systems_col = st.columns(
+            [1.05, 1, 1.05, 1.2],
+            vertical_alignment="top",
         )
+        with method_col:
+            show_all_methods = st.toggle(
+                "Todos los métodos",
+                key="show_all_methods",
+                help="Desactívalo para comparar técnicas de detección concretas.",
+            )
+            if show_all_methods:
+                methods = method_options
+                st.caption(f"{len(method_options)} técnicas incluidas")
+            else:
+                methods = st.multiselect(
+                    "Métodos",
+                    options=method_options,
+                    key="methods",
+                    placeholder="Elige una o más",
+                    format_func=translate_discovery_method,
+                )
 
-        st.divider()
-        st.markdown("### Sistemas específicos")
+        with count_col:
+            planet_count_range = st.slider(
+                "Planetas por sistema",
+                min_value=min_planets,
+                max_value=max_planets,
+                key="planet_count_range",
+            )
 
-        host_options = sorted(df["hostname"].dropna().unique().tolist())
-        host_query = st.text_input(
-            "Buscar estrella anfitriona",
-            placeholder="Ej.: TRAPPIST, Kepler...",
-            key="host_query",
-        )
+        with search_col:
+            host_query = st.text_input(
+                "Buscar estrella",
+                placeholder="TRAPPIST, Kepler…",
+                key="host_query",
+            )
 
         matching_hosts = host_options
         if host_query:
@@ -2404,89 +2958,177 @@ def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str],
                 if host_query.lower() in host.lower()
             ][:120]
 
-        selected_hosts = st.multiselect(
-            "Mostrar solo estos sistemas",
-            options=matching_hosts,
-            placeholder="Todos los sistemas",
-            key="selected_hosts",
+        with systems_col:
+            selected_hosts = st.multiselect(
+                "Sistemas concretos",
+                options=matching_hosts,
+                placeholder="Sin selección",
+                key="selected_hosts",
+            )
+
+        filter_notes: list[str] = []
+        if not show_all_methods:
+            filter_notes.append(f"{len(methods)} método(s)")
+        if planet_count_range != (min_planets, max_planets):
+            filter_notes.append(
+                f"sistemas de {planet_count_range[0]} a {planet_count_range[1]} planetas"
+            )
+        if selected_hosts:
+            filter_notes.append(f"{len(selected_hosts)} sistema(s)")
+        st.caption(
+            "Selección activa: " + " · ".join(filter_notes)
+            if filter_notes
+            else "Catálogo completo, sin filtros aplicados."
         )
 
-        st.divider()
-        st.markdown("### Configuración del gráfico")
+    return methods, planet_count_range, selected_hosts
 
-        x_axis = st.selectbox(
-            "Eje X",
-            options=list(labels.keys()),
-            key="x_axis",
-            format_func=lambda column: format_axis_label(column, labels),
+
+def render_chart_dashboard(
+    labels: dict[str, str],
+) -> tuple[str, bool, str, bool, str, str]:
+    """Mantiene las decisiones del gráfico visibles en el contenido principal."""
+    with st.container(border=True):
+        st.markdown(
+            '<p class="atlas-module-label">Panel para construir el gráfico</p>',
+            unsafe_allow_html=True,
+        )
+        st.subheader("Cruza dos variables")
+        st.caption(
+            "Elige un punto de partida. Después puedes cambiar los ejes, el color o la escala."
         )
 
-        log_x = st.toggle("Escala logarítmica (X)", key="log_x")
+        if hasattr(st, "pills"):
+            st.pills(
+                "Vista inicial",
+                options=list(PRESETS.keys()),
+                key="preset",
+                required=True,
+                format_func=lambda value: PRESET_SHORT_LABELS[value],
+                on_change=lambda: set_preset_state(st.session_state["preset"]),
+                help="Cada opción carga una combinación distinta de variables.",
+                width="stretch",
+            )
+        else:
+            st.selectbox(
+                "Vista inicial",
+                options=list(PRESETS.keys()),
+                key="preset",
+                format_func=lambda value: PRESET_SHORT_LABELS[value],
+                on_change=lambda: set_preset_state(st.session_state["preset"]),
+                help="Cada opción carga una combinación distinta de variables.",
+                width="stretch",
+            )
 
-        y_axis = st.selectbox(
-            "Eje Y",
-            options=list(labels.keys()),
-            key="y_axis",
-            format_func=lambda column: format_axis_label(column, labels),
+        axis_x_col, axis_y_col, color_col = st.columns(3)
+        with axis_x_col:
+            x_axis = st.selectbox(
+                "Eje horizontal (X)",
+                options=list(labels.keys()),
+                key="x_axis",
+                format_func=lambda column: format_axis_label(column, labels),
+            )
+            log_x = st.toggle(
+                "Usar escala logarítmica en X",
+                key="log_x",
+                help="Es útil cuando los valores abarcan varios órdenes de magnitud.",
+            )
+
+        with axis_y_col:
+            y_axis = st.selectbox(
+                "Eje vertical (Y)",
+                options=list(labels.keys()),
+                key="y_axis",
+                format_func=lambda column: format_axis_label(column, labels),
+            )
+            log_y = st.toggle(
+                "Usar escala logarítmica en Y",
+                key="log_y",
+                help="Es útil cuando los valores abarcan varios órdenes de magnitud.",
+            )
+
+        with color_col:
+            color_mode = st.selectbox(
+                "Distinguir los puntos por",
+                options=["none", "discoverymethod", *labels.keys()],
+                key="color_mode",
+                format_func=lambda value: (
+                    "Un solo color"
+                    if value == "none"
+                    else "Método de descubrimiento"
+                    if value == "discoverymethod"
+                    else format_axis_label(value, labels)
+                ),
+            )
+            size_mode = st.radio(
+                "Tamaño de los puntos",
+                options=["fixed", "system"],
+                key="size_mode",
+                horizontal=True,
+                format_func=lambda value: (
+                    "Igual para todos"
+                    if value == "fixed"
+                    else "Planetas del sistema"
+                ),
+            )
+
+        (
+            reading_question,
+            reading_hint,
+            research_question,
+            research_hint,
+        ) = build_visualization_prompts(
+            x_axis,
+            y_axis,
+            color_mode,
+            size_mode,
+            log_x,
+            log_y,
+            labels,
+        )
+        st.markdown(
+            f"""
+            <div class="atlas-learning-grid">
+                <div class="atlas-reading-card">
+                    <span>Cómo leer este gráfico</span>
+                    <strong>{reading_question}</strong>
+                    <small>{reading_hint}</small>
+                </div>
+                <div class="atlas-learning-card">
+                    <span>Pregunta para investigar</span>
+                    <strong>{research_question}</strong>
+                    <small>{research_hint}</small>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
-        log_y = st.toggle("Escala logarítmica (Y)", key="log_y")
-
-        color_mode = st.selectbox(
-            "Representar con el color",
-            options=["none", "discoverymethod", *labels.keys()],
-            key="color_mode",
-            format_func=lambda value: (
-                "Un solo color"
-                if value == "none"
-                else "Método de descubrimiento"
-                if value == "discoverymethod"
-                else format_axis_label(value, labels)
-            ),
-        )
-
-        size_mode = st.radio(
-            "Representar con el tamaño",
-            options=["fixed", "system"],
-            key="size_mode",
-            format_func=lambda value: (
-                "Fijo"
-                if value == "fixed"
-                else "Según la cantidad de planetas del sistema"
-            ),
-        )
-
-    return (
-        methods,
-        planet_count_range,
-        selected_hosts,
-        x_axis,
-        log_x,
-        y_axis,
-        log_y,
-        color_mode,
-        size_mode,
-    )
+    return x_axis, log_x, y_axis, log_y, color_mode, size_mode
 
 
 def render_visual_explorer(
     filtered: pd.DataFrame,
     labels: dict[str, str],
     *,
-    x_axis: str,
-    y_axis: str,
-    color_mode: str,
-    size_mode: str,
-    log_x: bool,
-    log_y: bool,
     theme_type: str,
 ) -> None:
     render_section_heading(
         "01 · Mapa comparativo",
         "Exploración orbital",
-        "Compara propiedades planetarias y estelares. Ajusta los filtros en la mesa de "
-        "observación y pasa el cursor por cada punto para conocer el mundo que representa.",
+        "La nube reúne los registros que cumplen tus filtros. Pasa el cursor para "
+        "identificarlos y cambia las variables para comprobar qué relaciones se mantienen.",
+        anchor="laboratorio",
     )
+
+    (
+        x_axis,
+        log_x,
+        y_axis,
+        log_y,
+        color_mode,
+        size_mode,
+    ) = render_chart_dashboard(labels)
 
     with st.container(border=True):
         st.markdown(
@@ -2533,8 +3175,8 @@ def render_top_systems(
     render_section_heading(
         "02 · Arquitecturas planetarias",
         "Sistemas destacados",
-        "Observa qué estrellas reúnen más mundos, qué parámetros cuentan con mejores "
-        "mediciones y cómo se distribuyen los planetas dentro de un sistema concreto.",
+        "La tabla ordena los sistemas con más planetas; el gráfico de cobertura muestra "
+        "qué mediciones están completas y cuáles todavía tienen huecos.",
     )
     col1, col2 = st.columns([1.2, 1])
 
@@ -2658,7 +3300,7 @@ def render_top_systems(
         '<p class="atlas-module-label">Vista detallada</p>',
         unsafe_allow_html=True,
     )
-    st.subheader("Explora un sistema concreto")
+    st.subheader("Abre un sistema")
     render_system_concept_guide()
 
     if system_summary.empty:
@@ -2668,9 +3310,13 @@ def render_top_systems(
         )
         return
 
+    system_options = system_summary["hostname"].tolist()
+    if st.session_state.get("selected_top_system") not in system_options:
+        st.session_state.pop("selected_top_system", None)
+
     selected_top_system = st.selectbox(
         "Sistema que quieres observar",
-        options=system_summary["hostname"].tolist(),
+        options=system_options,
         help="Elige una estrella para ver las métricas y la distribución de sus planetas.",
         key="selected_top_system",
     )
@@ -2838,8 +3484,8 @@ def render_csv_data(filtered: pd.DataFrame) -> None:
     render_section_heading(
         "03 · Registro completo",
         "Catálogo de exoplanetas",
-        "Revisa los registros que cumplen tus filtros. Puedes ordenar las columnas, ampliar "
-        "la tabla o descargar exactamente la selección que estás viendo.",
+        "Aquí están las filas que pasaron los filtros. La tabla se puede ordenar, buscar "
+        "y descargar tal como aparece en pantalla.",
     )
 
     with st.container(border=True):
@@ -2896,7 +3542,7 @@ def render_csv_data(filtered: pd.DataFrame) -> None:
         )
 
 
-def reset_atlas_state() -> None:
+def reset_atlas_state(full_planet_range: tuple[int, int]) -> None:
     """Restaura navegación, filtros y controles al estado inicial del Atlas."""
     keys_to_reset = [
         "preset",
@@ -2922,6 +3568,19 @@ def reset_atlas_state() -> None:
     for key in keys_to_reset:
         st.session_state.pop(key, None)
 
+    # Asignar los valores base de forma explícita evita que el frontend vuelva a
+    # enviar el estado anterior de un widget en la misma recarga.
+    initial_preset = "Masa según el semieje mayor"
+    st.session_state["preset"] = initial_preset
+    set_preset_state(initial_preset)
+    st.session_state["size_mode"] = "fixed"
+    st.session_state["show_all_methods"] = True
+    st.session_state["methods"] = []
+    st.session_state["planet_count_range"] = full_planet_range
+    st.session_state["host_query"] = ""
+    st.session_state["selected_hosts"] = []
+    st.session_state["main_section"] = MAIN_SECTIONS[0]
+
     # Los selectores contextuales usan una clave que depende de los ejes activos.
     for key in list(st.session_state.keys()):
         if str(key).startswith("context_concept_"):
@@ -2934,6 +3593,12 @@ def reset_atlas_state() -> None:
 
 
 def initialize_session_state() -> None:
+    current_theme_mode = st.session_state.get("theme_mode")
+    if current_theme_mode in LEGACY_THEME_MODES:
+        st.session_state["theme_mode"] = LEGACY_THEME_MODES[current_theme_mode]
+    elif current_theme_mode not in THEME_MODES:
+        st.session_state["theme_mode"] = "Sistema"
+
     if "preset" not in st.session_state:
         st.session_state["preset"] = "Masa según el semieje mayor"
 
@@ -2963,35 +3628,36 @@ def validate_required_columns(df: pd.DataFrame) -> None:
     if missing_columns:
         st.error(
             "El catálogo se cargó, pero le faltan campos indispensables para construir "
-            "la experiencia. Revisa el detalle técnico antes de volver a intentarlo."
+            "la interfaz. Revisa el detalle técnico antes de volver a intentarlo."
         )
         st.code(", ".join(missing_columns), language=None)
         st.stop()
 
 
 def main() -> None:
-    theme_type = get_active_theme()
-    apply_theme(theme_type)
     initialize_session_state()
+    theme_mode = render_theme_selector()
+    theme_type = get_active_theme(theme_mode)
+    apply_theme(theme_type)
     apply_section_query_parameter()
 
     st.markdown(
         """
         <section class="hero">
             <div class="hero-copy">
-                <div class="hero-kicker">Cartografía celeste · NASA Exoplanet Archive</div>
+                <div class="hero-kicker">NASA Exoplanet Archive · catálogo</div>
                 <h1>Atlas de <span>Exoplanetas</span></h1>
                 <p>
-                    Explora miles de mundos más allá del Sistema Solar. Compara sus órbitas,
-                    tamaños y masas; descubre cómo se organizan sus sistemas y qué señales
-                    permitieron encontrarlos.
+                    Cada punto de este atlas corresponde a un planeta confirmado fuera del
+                    Sistema Solar. Puedes cruzar sus órbitas, masas y tamaños, y comprobar
+                    cuándo un patrón se mantiene o se desarma al cambiar los datos.
                 </p>
                 <div class="hero-meta">
                     <span>Fuente <strong>NASA</strong></span>
-                    <span>Catálogo <strong>PS</strong></span>
                     <span>Actualización <strong>diaria · 08:00</strong></span>
-                    <span>Datos <strong>confirmados</strong></span>
+                    <span>Registro <strong>planetas confirmados</strong></span>
                 </div>
+                <a class="hero-action" href="#laboratorio">Ir al mapa de datos ↓</a>
             </div>
             <div class="hero-orbit" aria-hidden="true">
                 <span class="orbit-ring"></span>
@@ -2999,7 +3665,7 @@ def main() -> None:
                 <span class="orbit-ring"></span>
                 <span class="orbit-planet one"></span>
                 <span class="orbit-planet two"></span>
-                <span class="orbit-coordinates">RA 17h 45m · DEC −29°</span>
+                <span class="orbit-coordinates">POSICIÓN SOLAR · R₀ ≈ 8,2 KPC · Z⊙ ≈ +20,8 PC</span>
             </div>
         </section>
         """,
@@ -3031,27 +3697,6 @@ def main() -> None:
         )
         st.stop()
 
-    render_overview(df)
-
-    (
-        methods,
-        planet_count_range,
-        selected_hosts,
-        x_axis,
-        log_x,
-        y_axis,
-        log_y,
-        color_mode,
-        size_mode,
-    ) = render_sidebar(df, labels)
-
-    filtered = filter_catalog(
-        df,
-        methods=methods,
-        planet_count_range=planet_count_range,
-        selected_hosts=selected_hosts,
-    )
-
     section = render_main_navigation()
 
     if section == "Métodos de detección":
@@ -3062,23 +3707,28 @@ def main() -> None:
         render_visual_guide()
         return
 
+    methods, planet_count_range, selected_hosts = render_filter_station(df)
+
+    filtered = filter_catalog(
+        df,
+        methods=methods,
+        planet_count_range=planet_count_range,
+        selected_hosts=selected_hosts,
+    )
+
     if filtered.empty:
         st.warning(
-            "No encontramos exoplanetas que coincidan con esta combinación de filtros. "
-            "Prueba ampliando el rango de planetas o incluyendo más métodos de detección."
+            "Esta selección quedó sin planetas. Amplía el rango, añade un método "
+            "de detección o limpia los filtros."
         )
         return
+
+    render_overview(filtered)
 
     if section == "Exploración orbital":
         render_visual_explorer(
             filtered,
             labels,
-            x_axis=x_axis,
-            y_axis=y_axis,
-            color_mode=color_mode,
-            size_mode=size_mode,
-            log_x=log_x,
-            log_y=log_y,
             theme_type=theme_type,
         )
     elif section == "Sistemas destacados":
