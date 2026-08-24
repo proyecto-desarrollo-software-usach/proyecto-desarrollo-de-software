@@ -11,6 +11,7 @@ import streamlit as st
 from explore_exoplanets import (
     available_plot_columns,
     load_catalog,
+    read_metadata,
 )
 
 PLOTLY_CONFIG = {
@@ -19,47 +20,47 @@ PLOTLY_CONFIG = {
     "scrollZoom": False,
 }
 
-# El Atlas renueva el catalogo una vez al dia. La primera ejecución posterior
-# a las 08:00 (hora de Chile) utiliza una nueva clave de cache y consulta NASA.
+# El Atlas renueva el catálogo una vez al día. La primera ejecución posterior
+# a las 08:00 (hora de Chile) utiliza una nueva clave de caché y consulta NASA.
 CATALOG_REFRESH_HOUR = 8
 CATALOG_TIMEZONE = "America/Santiago"
 
 THEME_TOKENS = {
     "dark": {
-        "bg": "#0B1015",
-        "bg_alt": "#0F161D",
-        "surface": "#121B23",
-        "surface_strong": "#18232D",
-        "surface_hover": "#21303B",
-        "text": "#E9EEF2",
-        "text_soft": "#C3CDD5",
-        "text_muted": "#8F9CA7",
-        "border": "#2A3945",
-        "border_strong": "#435563",
-        "accent": "#F2A341",
-        "accent_soft": "#FFD08A",
-        "accent_2": "#45B8A8",
-        "danger": "#F06A61",
-        "grid": "rgba(143, 156, 167, 0.095)",
-        "shadow": "rgba(0, 0, 0, 0.30)",
+        "bg": "#071019",
+        "bg_alt": "#0A1520",
+        "surface": "#0E1B27",
+        "surface_strong": "#142532",
+        "surface_hover": "#1A3040",
+        "text": "#F3F5F2",
+        "text_soft": "#C7D2D6",
+        "text_muted": "#82949E",
+        "border": "#233947",
+        "border_strong": "#395667",
+        "accent": "#FFB258",
+        "accent_soft": "#FFD39A",
+        "accent_2": "#63DDD2",
+        "danger": "#FF716B",
+        "grid": "rgba(119, 167, 183, 0.075)",
+        "shadow": "rgba(0, 0, 0, 0.38)",
     },
     "light": {
-        "bg": "#F3F0E8",
-        "bg_alt": "#ECE7DC",
-        "surface": "#FBF8F1",
-        "surface_strong": "#F4EEE3",
-        "surface_hover": "#E9E1D4",
-        "text": "#20272D",
-        "text_soft": "#46515A",
-        "text_muted": "#6B777F",
-        "border": "#D3CABD",
-        "border_strong": "#A99D8E",
-        "accent": "#A94C1F",
-        "accent_soft": "#C76A37",
-        "accent_2": "#0B746B",
-        "danger": "#A83C35",
-        "grid": "rgba(70, 81, 90, 0.085)",
-        "shadow": "rgba(47, 39, 28, 0.10)",
+        "bg": "#F4F0E7",
+        "bg_alt": "#EAE4D8",
+        "surface": "#FCFAF5",
+        "surface_strong": "#F1EBDF",
+        "surface_hover": "#E6DED0",
+        "text": "#17242B",
+        "text_soft": "#40525B",
+        "text_muted": "#6B7A80",
+        "border": "#D2C8B9",
+        "border_strong": "#9D9180",
+        "accent": "#B64D25",
+        "accent_soft": "#D36C3D",
+        "accent_2": "#087A72",
+        "danger": "#B43E39",
+        "grid": "rgba(60, 85, 94, 0.075)",
+        "shadow": "rgba(35, 43, 45, 0.13)",
     },
 }
 
@@ -151,11 +152,11 @@ DISCOVERY_METHOD_ES = {
     "Imaging": "Imagen directa",
     "Microlensing": "Microlente gravitacional",
     "Pulsar Timing": "Cronometría de púlsares",
-    "Transit Timing Variations": "Variaciones del tiempo de tránsito",
-    "Eclipse Timing Variations": "Variaciones del tiempo de eclipse",
+    "Transit Timing Variations": "Variaciones en los tiempos de tránsito",
+    "Eclipse Timing Variations": "Variaciones en los tiempos de eclipse",
     "Orbital Brightness Modulation": "Modulación del brillo orbital",
     "Astrometry": "Astrometría",
-    "Pulsation Timing Variations": "Variaciones temporales de pulsación",
+    "Pulsation Timing Variations": "Variaciones en los tiempos de pulsación",
     "Disk Kinematics": "Cinemática de disco",
 }
 
@@ -179,9 +180,9 @@ CONCEPTS = [
         "video": "Exoplanet.mp4",
         "group": "Fundamentos",
         "summary": (
-            "Un exoplaneta es un planeta fuera del Sistema Solar. En el catálogo del Atlas, "
-            "la mayoría aparece ligado a una estrella anfitriona y se caracteriza mediante "
-            "parámetros orbitales y físicos medidos o inferidos observacionalmente."
+            "Un exoplaneta es un mundo que orbita una estrella distinta del Sol. En el Atlas, "
+            "cada planeta aparece vinculado a su estrella anfitriona y se describe mediante "
+            "parámetros físicos y orbitales medidos —o inferidos— a partir de observaciones."
         ),
         "points": [
             "No pertenece al Sistema Solar.",
@@ -243,10 +244,10 @@ CONCEPTS = [
         "group": "Parámetros orbitales",
         "summary": (
             "El período orbital es el tiempo que tarda el planeta en completar una vuelta alrededor "
-            "de su estrella anfitriona. En el catálogo utilizado por la app se expresa en días."
+            "de su estrella anfitriona. En el catálogo del Atlas se expresa en días."
         ),
         "points": [
-            "Períodos cortos corresponden a órbitas que se completan rápidamente.",
+            "Los períodos cortos corresponden a órbitas que se completan rápidamente.",
             "Está relacionado con el tamaño orbital mediante la dinámica kepleriana.",
             "Es uno de los parámetros que puede medirse con gran precisión en sistemas transitantes.",
         ],
@@ -284,8 +285,8 @@ DETECTION_METHODS = [
         "description": (
             "Cuando un exoplaneta pasa frente a su estrella desde nuestra línea de visión, "
             "bloquea una pequeña fracción de su luz. Si la caída de brillo se repite de forma "
-            "periódica, el intervalo entre eventos entrega el período orbital y la profundidad "
-            "del tránsito permite estimar el tamaño del exoplaneta respecto de su estrella."
+            "periódica, el intervalo entre eventos permite determinar el período orbital y la profundidad "
+            "del tránsito permite estimar el tamaño del exoplaneta en relación con su estrella."
         ),
         "examples": [
             "TRAPPIST-1 — sistema compacto de siete exoplanetas de tamaño terrestre detectados por tránsitos.",
@@ -351,12 +352,12 @@ DETECTION_METHODS = [
             "orbital, puede determinar la masa real del compañero y no solo una masa mínima."
         ),
         "examples": [
-            "GJ 896 A b — planeta cuya señal astrométrica fue medida alrededor de una componente de un sistema binario.",
+            "GJ 896 A b — planeta cuya señal astrométrica se midió alrededor de una de las componentes de un sistema binario.",
             "Gaia-4 b — exoplaneta confirmado a partir de una solución orbital astrométrica de Gaia y seguimiento espectroscópico.",
         ],
     },
     {
-        "title": "Variaciones del tiempo de tránsito",
+        "title": "Variaciones en los tiempos de tránsito",
         "archive_method": "Transit Timing Variations",
         "video": "VariacionesTiempoTransito.mp4",
         "signal": "Adelantos y retrasos respecto de una secuencia regular de tránsitos",
@@ -372,7 +373,7 @@ DETECTION_METHODS = [
         ],
     },
     {
-        "title": "Variaciones del tiempo de eclipse",
+        "title": "Variaciones en los tiempos de eclipse",
         "archive_method": "Eclipse Timing Variations",
         "video": "VariacionesTiempoEclipse.mp4",
         "signal": "Cambios en los tiempos de eclipse de una estrella binaria",
@@ -387,7 +388,7 @@ DETECTION_METHODS = [
         ],
     },
     {
-        "title": "Timing de púlsar",
+        "title": "Cronometría de púlsares",
         "archive_method": "Pulsar Timing",
         "video": "TimingPulsar.mp4",
         "signal": "Cambios en el tiempo de llegada de pulsos extremadamente regulares",
@@ -398,12 +399,12 @@ DETECTION_METHODS = [
             "órbitas y masas con gran precisión."
         ),
         "examples": [
-            "PSR B1257+12 c y d — parte del primer sistema de exoplanetas confirmado alrededor de un púlsar.",
-            "PSR B1257+12 b — pequeño compañero del mismo sistema, también medido por timing de púlsar.",
+            "PSR B1257+12 c y d — integrantes del primer sistema de exoplanetas confirmado alrededor de un púlsar.",
+            "PSR B1257+12 b — pequeño compañero del mismo sistema, también medido mediante cronometría de púlsares.",
         ],
     },
     {
-        "title": "Timing de pulsaciones",
+        "title": "Cronometría de pulsaciones",
         "archive_method": "Pulsation Timing Variations",
         "video": "TimingPulsaciones.mp4",
         "signal": "Cambios de fase en pulsaciones estelares regulares",
@@ -425,7 +426,7 @@ DETECTION_METHODS = [
         "signal": "Variación periódica del brillo total con la fase orbital",
         "description": (
             "El brillo combinado de una estrella y su exoplaneta puede cambiar durante la órbita incluso sin "
-            "un tránsito. La señal puede contener luz reflejada o térmica del planeta, Doppler beaming y pequeñas "
+            "un tránsito. La señal puede contener luz reflejada o térmica del planeta, realce relativista por Doppler y pequeñas "
             "deformaciones gravitatorias de la estrella. Al repetirse con el período orbital, estas modulaciones "
             "permiten detectar o caracterizar compañeros cercanos."
         ),
@@ -481,7 +482,7 @@ TABLE_COLUMN_LABELS = {
 }
 
 BASE_CSS = r"""
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap');
 
 html, body, [class*="css"] {
     font-family: 'IBM Plex Sans', sans-serif;
@@ -1034,32 +1035,681 @@ h1, h2, h3, p, label, [data-testid="stMetricLabel"] {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.68rem;
 }
+
+/* -------------------------------------------------------------------------
+   Rediseño 2026 · cartografía celeste
+   Una interfaz editorial y científica, con jerarquía clara y controles que
+   se sienten parte de un instrumento de observación, no de un dashboard.
+   ------------------------------------------------------------------------- */
+
+html {
+    scroll-behavior: smooth;
+}
+
+html, body, [class*="css"] {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.stApp {
+    background-color: var(--atlas-bg);
+    background-image:
+        radial-gradient(circle at 82% 6%, color-mix(in srgb, var(--atlas-accent-2) 10%, transparent) 0, transparent 24rem),
+        radial-gradient(circle at 18% 38%, color-mix(in srgb, var(--atlas-accent) 7%, transparent) 0, transparent 30rem),
+        linear-gradient(var(--atlas-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--atlas-grid) 1px, transparent 1px);
+    background-size: auto, auto, 64px 64px, 64px 64px;
+}
+
+.stApp::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.48;
+    background-image:
+        radial-gradient(circle at 12% 18%, var(--atlas-text-muted) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 72% 34%, var(--atlas-text-muted) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 43% 78%, var(--atlas-text-muted) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 91% 83%, var(--atlas-text-muted) 0 1px, transparent 1.5px);
+    background-size: 220px 220px, 310px 310px, 270px 270px, 360px 360px;
+}
+
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+[data-testid="stSidebar"] {
+    position: relative;
+    z-index: 1;
+}
+
+[data-testid="stHeader"] {
+    background: color-mix(in srgb, var(--atlas-bg) 78%, transparent) !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--atlas-border) 70%, transparent);
+    backdrop-filter: blur(14px);
+}
+
+[data-testid="stToolbar"],
+#MainMenu,
+footer {
+    visibility: hidden;
+}
+
+.block-container {
+    max-width: 1480px;
+    padding-top: 2rem;
+    padding-bottom: 5rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+}
+
+h1, h2 {
+    font-family: 'Newsreader', Georgia, serif;
+    font-weight: 600;
+}
+
+p, li {
+    line-height: 1.65;
+}
+
+/* Hero editorial con una órbita construida íntegramente en CSS. */
+.hero {
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+    align-items: center;
+    min-height: 430px;
+    margin-bottom: 1.35rem;
+    padding: clamp(2rem, 5vw, 4.8rem);
+    overflow: hidden;
+    background:
+        linear-gradient(112deg, color-mix(in srgb, var(--atlas-surface) 97%, transparent), color-mix(in srgb, var(--atlas-bg-alt) 91%, transparent));
+    border: 1px solid var(--atlas-border-strong);
+    border-radius: 2px 54px 2px 54px;
+    box-shadow: 0 24px 70px -36px var(--atlas-shadow);
+}
+
+.hero::before {
+    inset: auto -7rem -10rem auto;
+    width: 30rem;
+    height: 30rem;
+    border: 1px solid color-mix(in srgb, var(--atlas-accent-2) 24%, transparent);
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--atlas-accent-2) 9%, transparent), transparent 62%);
+    opacity: 1;
+}
+
+.hero::after {
+    top: 0;
+    left: 0;
+    width: 7rem;
+    height: 5px;
+    background: var(--atlas-accent);
+    box-shadow: calc(100vw - 7rem) calc(430px - 5px) 0 var(--atlas-accent-2);
+}
+
+.hero-layout,
+.hero-copy {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.15rem;
+    color: var(--atlas-accent) !important;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+}
+
+.hero-kicker::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--atlas-accent-2);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--atlas-accent-2) 12%, transparent);
+}
+
+.hero h1 {
+    max-width: 760px;
+    margin: 0 0 1.15rem;
+    font-size: clamp(3rem, 6.3vw, 5.7rem);
+    font-weight: 600;
+    line-height: 0.88;
+    letter-spacing: -0.055em;
+}
+
+.hero h1 span {
+    display: block;
+    color: var(--atlas-accent-soft);
+    font-style: italic;
+    font-weight: 500;
+}
+
+.hero p {
+    max-width: 690px;
+    font-size: clamp(0.98rem, 1.4vw, 1.12rem);
+    line-height: 1.72;
+}
+
+.hero-meta {
+    gap: 0.6rem;
+    margin-top: 1.7rem;
+    padding-top: 1.1rem;
+}
+
+.hero-meta span {
+    padding: 0.38rem 0.58rem;
+    border: 1px solid var(--atlas-border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--atlas-surface-strong) 72%, transparent);
+}
+
+.hero-orbit {
+    position: relative;
+    z-index: 2;
+    width: min(28vw, 330px);
+    aspect-ratio: 1;
+    justify-self: end;
+}
+
+.hero-orbit::before {
+    content: '';
+    position: absolute;
+    inset: 43%;
+    z-index: 3;
+    border-radius: 50%;
+    background: var(--atlas-accent);
+    box-shadow:
+        0 0 0 9px color-mix(in srgb, var(--atlas-accent) 12%, transparent),
+        0 0 42px 8px color-mix(in srgb, var(--atlas-accent) 38%, transparent);
+}
+
+.orbit-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border: 1px solid color-mix(in srgb, var(--atlas-text-soft) 34%, transparent);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) rotate(-24deg);
+}
+
+.orbit-ring:nth-child(1) {
+    width: 96%;
+    height: 36%;
+}
+
+.orbit-ring:nth-child(2) {
+    width: 72%;
+    height: 72%;
+    border-color: color-mix(in srgb, var(--atlas-accent-2) 48%, transparent);
+}
+
+.orbit-ring:nth-child(3) {
+    width: 44%;
+    height: 90%;
+    transform: translate(-50%, -50%) rotate(46deg);
+}
+
+.orbit-planet {
+    position: absolute;
+    z-index: 4;
+    width: 15px;
+    height: 15px;
+    border: 3px solid var(--atlas-surface);
+    border-radius: 50%;
+    background: var(--atlas-accent-2);
+    box-shadow: 0 0 22px color-mix(in srgb, var(--atlas-accent-2) 60%, transparent);
+}
+
+.orbit-planet.one { top: 27%; right: 8%; }
+.orbit-planet.two { bottom: 8%; left: 29%; width: 10px; height: 10px; background: var(--atlas-accent-soft); }
+
+.orbit-coordinates {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    color: var(--atlas-text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* Resumen del catálogo: una sola banda de lectura, no cuatro tarjetas. */
+.atlas-snapshot {
+    margin: 0 0 1.45rem;
+    border: 1px solid var(--atlas-border);
+    border-radius: 18px 2px 18px 2px;
+    background: color-mix(in srgb, var(--atlas-surface) 92%, transparent);
+    box-shadow: 0 18px 55px -46px var(--atlas-shadow);
+    overflow: hidden;
+}
+
+.atlas-snapshot-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--atlas-border);
+    background: color-mix(in srgb, var(--atlas-surface-strong) 78%, transparent);
+}
+
+.atlas-snapshot-head span:first-child {
+    color: var(--atlas-text);
+    font-size: 0.84rem;
+    font-weight: 700;
+}
+
+.atlas-snapshot-head span:last-child {
+    color: var(--atlas-accent-2);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.atlas-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.atlas-stat {
+    position: relative;
+    min-height: 126px;
+    padding: 1.25rem 1.2rem 1.1rem;
+    border-right: 1px solid var(--atlas-border);
+}
+
+.atlas-stat:last-child {
+    border-right: 0;
+}
+
+.atlas-stat-label {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--atlas-text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.atlas-stat-value {
+    display: block;
+    color: var(--atlas-text);
+    font-family: 'Newsreader', Georgia, serif;
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    font-weight: 600;
+    line-height: 1;
+}
+
+.atlas-stat-note {
+    display: block;
+    margin-top: 0.55rem;
+    color: var(--atlas-text-muted);
+    font-size: 0.7rem;
+}
+
+a.atlas-stat {
+    color: inherit !important;
+    text-decoration: none !important;
+    transition: background-color 160ms ease;
+}
+
+a.atlas-stat:hover {
+    background: var(--atlas-surface-hover);
+}
+
+a.atlas-stat .atlas-stat-note {
+    color: var(--atlas-accent);
+}
+
+/* Encabezados de sección reutilizables. */
+.atlas-section-heading {
+    display: grid;
+    grid-template-columns: minmax(130px, 0.28fr) minmax(0, 1fr);
+    gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: start;
+    margin: 1.8rem 0 1.2rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--atlas-border);
+}
+
+.atlas-section-index {
+    color: var(--atlas-accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.atlas-section-heading h2 {
+    margin: -0.15rem 0 0.3rem;
+    font-size: clamp(1.85rem, 4vw, 3rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
+}
+
+.atlas-section-heading p {
+    max-width: 780px;
+    margin: 0;
+    color: var(--atlas-text-muted) !important;
+    font-size: 0.92rem;
+}
+
+.atlas-module-label {
+    margin: 0 0 0.35rem;
+    color: var(--atlas-accent) !important;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.67rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* Navegación principal. */
+[data-testid="stSegmentedControl"] {
+    position: sticky;
+    top: 3.2rem;
+    z-index: 20;
+    margin: 0 0 0.9rem;
+    padding: 0.38rem;
+    border: 1px solid var(--atlas-border);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--atlas-bg-alt) 86%, transparent);
+    box-shadow: 0 12px 32px -26px var(--atlas-shadow);
+    backdrop-filter: blur(16px);
+}
+
+[data-testid="stSegmentedControl"] button {
+    min-height: 42px;
+    border: 0 !important;
+    border-radius: 9px !important;
+    font-family: 'Manrope', sans-serif !important;
+    font-size: 0.78rem !important;
+    font-weight: 650 !important;
+    letter-spacing: 0 !important;
+    text-transform: none;
+}
+
+[data-testid="stSegmentedControl"] button[aria-pressed="true"] {
+    background: var(--atlas-surface-strong) !important;
+    box-shadow: inset 0 0 0 1px var(--atlas-border-strong);
+}
+
+/* Módulos y controles. */
+[data-testid="stVerticalBlockBorderWrapper"] {
+    border: 1px solid var(--atlas-border) !important;
+    border-radius: 16px 3px 16px 3px;
+    background: color-mix(in srgb, var(--atlas-surface) 94%, transparent);
+    box-shadow: 0 20px 48px -44px var(--atlas-shadow);
+}
+
+[data-testid="stVerticalBlockBorderWrapper"]:has([data-testid="stPlotlyChart"]) {
+    overflow: hidden;
+}
+
+[data-baseweb="select"] > div,
+[data-baseweb="base-input"],
+[data-testid="stTextInput"] input {
+    min-height: 43px;
+    border-color: var(--atlas-border-strong) !important;
+    border-radius: 8px !important;
+    background: var(--atlas-surface-strong) !important;
+    color: var(--atlas-text) !important;
+}
+
+[data-baseweb="select"] > div:focus-within,
+[data-baseweb="base-input"]:focus-within,
+[data-testid="stTextInput"] input:focus {
+    border-color: var(--atlas-accent-2) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--atlas-accent-2) 12%, transparent) !important;
+}
+
+/* Streamlit coloca la etiqueta después del input; se evita teñir el texto. */
+[data-testid="stCheckbox"] input:checked + div {
+    background: transparent !important;
+}
+
+[data-testid="stCheckbox"] label:has(input:checked) > div:first-child {
+    background: var(--atlas-accent-2) !important;
+}
+
+[data-baseweb="slider"] > div > div > div:last-child {
+    background: color-mix(in srgb, var(--atlas-accent-2) 78%, var(--atlas-surface-strong)) !important;
+}
+
+.stButton > button,
+.stDownloadButton > button {
+    min-height: 43px;
+    border-radius: 8px 2px 8px 2px !important;
+    box-shadow: none;
+}
+
+.stButton > button:hover,
+.stDownloadButton > button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px -16px var(--atlas-shadow);
+}
+
+.stDownloadButton > button {
+    border-color: var(--atlas-accent) !important;
+    background: var(--atlas-accent) !important;
+}
+
+.stDownloadButton > button p {
+    color: var(--atlas-bg) !important;
+}
+
+[data-testid="stExpander"] {
+    border-color: var(--atlas-border) !important;
+    border-radius: 12px 2px 12px 2px !important;
+    background: color-mix(in srgb, var(--atlas-surface) 90%, transparent);
+}
+
+[data-testid="stAlert"] {
+    border-radius: 10px 2px 10px 2px;
+}
+
+[data-testid="stDataFrame"] {
+    overflow: hidden;
+    border: 1px solid var(--atlas-border);
+    border-radius: 10px 2px 10px 2px;
+}
+
+[data-testid="stPlotlyChart"] {
+    border-radius: 10px;
+}
+
+[data-baseweb="tab-list"] {
+    padding: 0.28rem;
+    border: 1px solid var(--atlas-border);
+    border-radius: 10px;
+    background: var(--atlas-bg-alt);
+}
+
+[data-baseweb="tab"] {
+    border: 0 !important;
+    border-radius: 7px !important;
+}
+
+[data-baseweb="tab"][aria-selected="true"] {
+    background: var(--atlas-surface-strong) !important;
+}
+
+[data-baseweb="tab-highlight"] {
+    display: none;
+}
+
+/* Panel lateral: índice y mesa de control. */
+[data-testid="stSidebar"] {
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--atlas-bg-alt) 96%, transparent), color-mix(in srgb, var(--atlas-surface) 88%, transparent)) !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    padding-top: 1.25rem;
+}
+
+.sidebar-brand {
+    margin: 0.15rem 0 1.1rem;
+    padding: 0.2rem 0.1rem 1rem;
+    border-bottom: 1px solid var(--atlas-border);
+}
+
+.sidebar-brand span {
+    display: block;
+    color: var(--atlas-accent) !important;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.sidebar-brand strong {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--atlas-text);
+    font-family: 'Newsreader', Georgia, serif;
+    font-size: 1.45rem;
+    font-weight: 600;
+}
+
+[data-testid="stSidebar"] h3 {
+    margin-top: 0.85rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+}
+
+[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {
+    font-size: 0.78rem;
+    font-weight: 650;
+}
+
+[data-testid="stVideo"] video {
+    border-radius: 12px 2px 12px 2px;
+    box-shadow: 0 18px 44px -35px var(--atlas-shadow);
+}
+
+/* Accesibilidad y movimiento. */
+:where(button, a, input, [role="slider"]):focus-visible {
+    outline: 2px solid var(--atlas-accent-2) !important;
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}
+
+@media (max-width: 980px) {
+    .hero {
+        grid-template-columns: minmax(0, 1fr) 220px;
+        min-height: 390px;
+        padding: 2.4rem;
+    }
+
+    .hero-orbit { width: 220px; }
+    .atlas-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .atlas-stat:nth-child(2) { border-right: 0; }
+    .atlas-stat:nth-child(-n+2) { border-bottom: 1px solid var(--atlas-border); }
+}
+
+@media (max-width: 700px) {
+    .block-container {
+        padding-top: 1rem;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .hero {
+        display: block;
+        min-height: auto;
+        padding: 2rem 1.25rem 1.6rem;
+        border-radius: 2px 28px 2px 28px;
+    }
+
+    .hero::after {
+        width: 5rem;
+        box-shadow: none;
+    }
+
+    .hero h1 { font-size: clamp(2.75rem, 15vw, 4.2rem); }
+    .hero-orbit { display: none; }
+    .hero-meta span { font-size: 0.59rem; }
+
+    .atlas-snapshot-head {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .atlas-stat-grid { grid-template-columns: 1fr 1fr; }
+    .atlas-stat { min-height: 112px; padding: 1rem 0.85rem; }
+    .atlas-stat-value { font-size: 2rem; }
+    .atlas-stat-label { font-size: 0.58rem; }
+
+    .atlas-section-heading {
+        display: block;
+        margin-top: 1.2rem;
+    }
+
+    .atlas-section-index { display: block; margin-bottom: 0.7rem; }
+
+    [data-testid="stSegmentedControl"] {
+        position: relative;
+        top: auto;
+        overflow-x: auto;
+    }
+
+    [data-testid="stSegmentedControl"] > div {
+        min-width: max-content;
+    }
+}
+
+@media (max-width: 420px) {
+    .atlas-stat-grid { grid-template-columns: 1fr; }
+    .atlas-stat,
+    .atlas-stat:nth-child(2) { border-right: 0; border-bottom: 1px solid var(--atlas-border); }
+    .atlas-stat:last-child { border-bottom: 0; }
+}
 """
 
 
 PRESETS = {
-    "Masa vs semieje mayor": {
+    "Masa según el semieje mayor": {
         "x": "pl_orbsmax",
         "y": "pl_bmasse",
         "color": "discoverymethod",
         "log_x": True,
         "log_y": True,
     },
-    "Radio vs semieje mayor": {
+    "Radio según el semieje mayor": {
         "x": "pl_orbsmax",
         "y": "pl_rade",
         "color": "discoverymethod",
         "log_x": True,
         "log_y": True,
     },
-    "Período vs semieje mayor": {
+    "Semieje mayor según el período": {
         "x": "pl_orbper",
         "y": "pl_orbsmax",
         "color": "pl_orbeccen",
         "log_x": True,
         "log_y": True,
     },
-    "Radio vs temperatura estelar": {
+    "Radio según la temperatura estelar": {
         "x": "st_teff",
         "y": "pl_rade",
         "color": "st_mass",
@@ -1144,16 +1794,60 @@ def get_catalog(refresh_key: str) -> pd.DataFrame:
     """
     Obtiene el catálogo desde NASA Exoplanet Archive una vez por ventana diaria.
 
-    `refresh_key` cambia cada día a las 08:00 (hora de Chile). Por tanto, la
-    primera visita posterior a esa hora genera una nueva consulta. Si NASA no
-    está disponible, `load_catalog` conserva su mecanismo de respaldo local.
+    `refresh_key` cambia cada día a las 08:00 (hora de Chile). Si el archivo
+    local ya fue descargado dentro de la ventana actual, se reutiliza incluso
+    después de reiniciar la app. Si NASA no está disponible, `load_catalog`
+    conserva su mecanismo de respaldo local.
     """
-    _ = refresh_key
-    return load_catalog(force_download=True)
+    should_download = True
+    metadata = read_metadata()
+    downloaded_at_raw = metadata.get("downloaded_at_utc")
+
+    if downloaded_at_raw:
+        try:
+            downloaded_at = datetime.fromisoformat(str(downloaded_at_raw))
+            refresh_start = datetime.strptime(
+                refresh_key,
+                "%Y-%m-%dT%H:%M",
+            ).replace(tzinfo=ZoneInfo(CATALOG_TIMEZONE))
+            should_download = downloaded_at < refresh_start
+        except (TypeError, ValueError):
+            should_download = True
+
+    return load_catalog(force_download=should_download)
 
 
 def format_axis_label(column: str, labels: dict[str, str]) -> str:
     return DEFAULT_COLUMN_LABELS.get(column, labels.get(column, column))
+
+
+def format_count(value: int) -> str:
+    """Formatea enteros con separador de miles habitual en español."""
+    return f"{value:,}".replace(",", ".")
+
+
+def render_section_heading(
+    index: str,
+    title: str,
+    description: str,
+    *,
+    anchor: str | None = None,
+) -> None:
+    """Crea una entrada de sección consistente y fácil de recorrer."""
+    anchor_markup = f'<span id="{anchor}"></span>' if anchor else ""
+    st.markdown(
+        f"""
+        {anchor_markup}
+        <header class="atlas-section-heading">
+            <span class="atlas-section-index">{index}</span>
+            <div>
+                <h2>{title}</h2>
+                <p>{description}</p>
+            </div>
+        </header>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def set_preset_state(preset_name: str) -> None:
@@ -1206,7 +1900,7 @@ def build_scatter(
     if plot_df.empty:
         fig = px.scatter(pd.DataFrame({"x": [], "y": []}), x="x", y="y", height=560)
         fig.update_layout(
-            title="No hay datos válidos para esta combinación de ejes y filtros.",
+            title="Esta combinación de ejes y filtros no contiene valores representables.",
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             font=dict(color=plot_style["text"]),
@@ -1381,22 +2075,39 @@ def render_overview(df: pd.DataFrame) -> None:
     multi_systems = df.loc[df["system_planet_count"] > 1, "hostname"].nunique()
     method_count = df["discoverymethod"].nunique()
 
-    with st.container(border=True):
-        cols = st.columns(4)
-        cols[0].metric("Exoplanetas confirmados", f"{len(df):,}".replace(",", "."))
-        cols[1].metric("Sistemas estelares", f"{total_systems:,}".replace(",", "."))
-        cols[2].metric("Sistemas múltiples", f"{multi_systems:,}".replace(",", "."))
-
-        cols[3].markdown(
-            f"""
-            <a class="atlas-metric-link" href="?section=metodos-deteccion#metodos-deteccion" target="_self">
-                <span class="atlas-metric-label">Métodos de detección</span>
-                <span class="atlas-metric-value">{method_count}</span>
-                <span class="atlas-metric-action">Abrir sección →</span>
-            </a>
-            """,
-            unsafe_allow_html=True,
-        )
+    st.markdown(
+        f"""
+        <section class="atlas-snapshot" aria-label="Resumen del catálogo">
+            <div class="atlas-snapshot-head">
+                <span>El universo conocido, en cifras</span>
+                <span>Catálogo confirmado · disponible</span>
+            </div>
+            <div class="atlas-stat-grid">
+                <div class="atlas-stat">
+                    <span class="atlas-stat-label">Exoplanetas confirmados</span>
+                    <strong class="atlas-stat-value">{format_count(len(df))}</strong>
+                    <span class="atlas-stat-note">Mundos con registro activo</span>
+                </div>
+                <div class="atlas-stat">
+                    <span class="atlas-stat-label">Sistemas estelares</span>
+                    <strong class="atlas-stat-value">{format_count(total_systems)}</strong>
+                    <span class="atlas-stat-note">Estrellas anfitrionas únicas</span>
+                </div>
+                <div class="atlas-stat">
+                    <span class="atlas-stat-label">Sistemas múltiples</span>
+                    <strong class="atlas-stat-value">{format_count(multi_systems)}</strong>
+                    <span class="atlas-stat-note">Con más de un planeta</span>
+                </div>
+                <a class="atlas-stat" href="?section=metodos-deteccion#metodos-deteccion" target="_self">
+                    <span class="atlas-stat-label">Métodos de detección</span>
+                    <strong class="atlas-stat-value">{method_count}</strong>
+                    <span class="atlas-stat-note">Conocer las técnicas →</span>
+                </a>
+            </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def apply_section_query_parameter() -> None:
@@ -1440,19 +2151,20 @@ def render_main_navigation() -> str:
 
 
 def render_detection_methods(df: pd.DataFrame) -> None:
-    st.markdown('<div id="metodos-deteccion"></div>', unsafe_allow_html=True)
-    st.subheader("Métodos de detección de exoplanetas")
-    st.caption(
-        "Cada animación muestra la relación entre el fenómeno físico y la señal observada. "
-        "Los ejemplos destacados corresponden a sistemas o exoplanetas representativos del método."
+    render_section_heading(
+        "05 · Cómo los encontramos",
+        "Métodos de detección",
+        "Un exoplaneta casi nunca se ve a simple vista. Estas animaciones conectan cada "
+        "fenómeno físico con la señal que los astrónomos observan y miden.",
+        anchor="metodos-deteccion",
     )
 
     method_titles = [method["title"] for method in DETECTION_METHODS]
     selected_method = st.selectbox(
-        "Método a visualizar",
+        "Técnica que quieres explorar",
         options=["Todos", *method_titles],
         key="detection_method_view",
-        help="Selecciona un método concreto o muestra las once técnicas de detección.",
+        help="Elige una técnica concreta o recorre las once disponibles.",
     )
 
     visible_methods = (
@@ -1477,15 +2189,19 @@ def render_detection_methods(df: pd.DataFrame) -> None:
 
             with info_col:
                 st.markdown(f"### {method['title']}")
-                st.caption(f"Señal observada · {method['signal']}")
+                st.caption(f"Qué se observa · {method['signal']}")
                 st.write(method["description"])
 
                 count = int((df["discoverymethod"] == method["archive_method"]).sum())
-                count_display = f"{count:,}".replace(",", ".")
+                count_display = format_count(count)
+                planet_label = (
+                    "exoplaneta descubierto"
+                    if count == 1
+                    else "exoplanetas descubiertos"
+                )
                 st.caption(
-                    f"Catálogo cargado: {count_display} exoplanetas con "
-                    f"**{translate_discovery_method(method['archive_method'])}** "
-                    "como método de descubrimiento."
+                    f"En el catálogo actual hay {count_display} {planet_label} mediante "
+                    f"**{translate_discovery_method(method['archive_method'])}**."
                 )
 
                 st.markdown("**Ejemplos destacados**")
@@ -1525,11 +2241,12 @@ def render_concept(concept: dict[str, object], *, compact: bool = False) -> None
 
 def render_visual_guide() -> None:
     """Sección principal para aprender los conceptos que aparecen en el Atlas."""
-    st.markdown('<div id="guia-visual"></div>', unsafe_allow_html=True)
-    st.subheader("Guía visual de conceptos")
-    st.caption(
-        "Estas animaciones explican el vocabulario que aparece en los gráficos y tablas. "
-        "La idea es poder consultar un concepto y volver inmediatamente al análisis del catálogo."
+    render_section_heading(
+        "04 · Antes de comparar",
+        "Guía visual de conceptos",
+        "Una introducción breve al vocabulario del Atlas. Consulta una idea, mira cómo "
+        "funciona y vuelve al catálogo con una lectura más clara.",
+        anchor="guia-visual",
     )
 
     group = st.segmented_control(
@@ -1564,8 +2281,8 @@ def render_visual_guide() -> None:
         render_concept(concept)
 
     st.caption(
-        "Consejo: en Exploración orbital, la app también muestra automáticamente los conceptos "
-        "relacionados con los ejes que estés usando."
+        "En Exploración orbital también encontrarás una guía contextual con los conceptos "
+        "relacionados con los ejes que tengas activos."
     )
 
 
@@ -1606,22 +2323,30 @@ def render_system_concept_guide() -> None:
 
 def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str], tuple[int, int], list[str], str, bool, str, bool, str, str]:
     with st.sidebar:
+        st.markdown(
+            """
+            <div class="sidebar-brand">
+                <span>Mesa de observación</span>
+                <strong>Configura tu mapa</strong>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         st.button(
-            "⌂ Inicio",
+            "↺ Restablecer exploración",
             key="atlas_home_reset_sidebar",
-            use_container_width=True,
+            width="stretch",
             help="Volver al inicio y restaurar filtros, búsquedas y controles.",
             on_click=reset_atlas_state,
         )
-        st.caption("Restaurar vista inicial")
-        st.divider()
-        st.markdown("### Panel de exploración")
+        st.markdown("### Punto de partida")
 
         st.selectbox(
-            "Vista sugerida",
+            "Relación sugerida",
             options=list(PRESETS.keys()),
             key="preset",
             on_change=lambda: set_preset_state(st.session_state["preset"]),
+            help="Carga una combinación de ejes, color y escala lista para explorar.",
         )
 
         st.divider()
@@ -1641,7 +2366,7 @@ def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str],
 
         if show_all_methods:
             methods = method_options
-            st.caption(f"{len(method_options)} métodos incluidos automáticamente.")
+            st.caption(f"Se incluyen automáticamente los {len(method_options)} métodos disponibles.")
         else:
             methods = st.multiselect(
                 "Métodos de descubrimiento",
@@ -1680,7 +2405,7 @@ def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str],
             ][:120]
 
         selected_hosts = st.multiselect(
-            "Restringir a",
+            "Mostrar solo estos sistemas",
             options=matching_hosts,
             placeholder="Todos los sistemas",
             key="selected_hosts",
@@ -1708,7 +2433,7 @@ def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str],
         log_y = st.toggle("Escala logarítmica (Y)", key="log_y")
 
         color_mode = st.selectbox(
-            "Color de los puntos",
+            "Representar con el color",
             options=["none", "discoverymethod", *labels.keys()],
             key="color_mode",
             format_func=lambda value: (
@@ -1721,7 +2446,7 @@ def render_sidebar(df: pd.DataFrame, labels: dict[str, str]) -> tuple[list[str],
         )
 
         size_mode = st.radio(
-            "Tamaño de los puntos",
+            "Representar con el tamaño",
             options=["fixed", "system"],
             key="size_mode",
             format_func=lambda value: (
@@ -1756,14 +2481,25 @@ def render_visual_explorer(
     log_y: bool,
     theme_type: str,
 ) -> None:
+    render_section_heading(
+        "01 · Mapa comparativo",
+        "Exploración orbital",
+        "Compara propiedades planetarias y estelares. Ajusta los filtros en la mesa de "
+        "observación y pasa el cursor por cada punto para conocer el mundo que representa.",
+    )
+
     with st.container(border=True):
+        st.markdown(
+            '<p class="atlas-module-label">Visualización activa</p>',
+            unsafe_allow_html=True,
+        )
         st.subheader(
-            f"Diagrama: {format_axis_label(y_axis, labels)} vs {format_axis_label(x_axis, labels)}"
+            f"{format_axis_label(y_axis, labels)} según {format_axis_label(x_axis, labels)}"
         )
 
         st.caption(
-            f"Mostrando **{len(filtered):,}** planetas en "
-            f"**{filtered['hostname'].nunique():,}** sistemas estelares."
+            f"La vista contiene **{format_count(len(filtered))} planetas** de "
+            f"**{format_count(filtered['hostname'].nunique())} sistemas estelares**."
         )
 
         figure = build_scatter(
@@ -1783,7 +2519,7 @@ def render_visual_explorer(
             yaxis_title=format_axis_label(y_axis, labels),
         )
 
-        st.plotly_chart(figure, use_container_width=True, config=PLOTLY_CONFIG)
+        st.plotly_chart(figure, width="stretch", config=PLOTLY_CONFIG)
 
     render_contextual_orbital_guide(x_axis, y_axis)
 
@@ -1794,11 +2530,21 @@ def render_top_systems(
     theme_type: str,
 ) -> None:
     plot_style = PLOT_THEMES[theme_type]
+    render_section_heading(
+        "02 · Arquitecturas planetarias",
+        "Sistemas destacados",
+        "Observa qué estrellas reúnen más mundos, qué parámetros cuentan con mejores "
+        "mediciones y cómo se distribuyen los planetas dentro de un sistema concreto.",
+    )
     col1, col2 = st.columns([1.2, 1])
 
     with col1:
         with st.container(border=True):
-            st.subheader("Sistemas multiplanetarios destacados")
+            st.markdown(
+                '<p class="atlas-module-label">Clasificación</p>',
+                unsafe_allow_html=True,
+            )
+            st.subheader("Sistemas con más planetas")
 
             system_summary = (
                 filtered.groupby("hostname")
@@ -1835,13 +2581,17 @@ def render_top_systems(
 
             st.dataframe(
                 system_summary_display,
-                use_container_width=True,
+                width="stretch",
                 hide_index=True,
             )
 
     with col2:
         with st.container(border=True):
-            st.subheader("Integridad de parámetros")
+            st.markdown(
+                '<p class="atlas-module-label">Calidad del catálogo</p>',
+                unsafe_allow_html=True,
+            )
+            st.subheader("Cobertura de los parámetros")
 
             completeness = (
                 filtered[list(labels.keys())]
@@ -1899,20 +2649,27 @@ def render_top_systems(
                 hovertemplate="Parámetro: %{y}<br>Registros disponibles: %{x}<extra></extra>"
             )
 
-            st.plotly_chart(bar, use_container_width=True, config=PLOTLY_CONFIG)
+            st.plotly_chart(bar, width="stretch", config=PLOTLY_CONFIG)
 
     st.markdown("<div style='height:0.55rem'></div>", unsafe_allow_html=True)
     st.divider()
     st.markdown("<div style='height:0.35rem'></div>", unsafe_allow_html=True)
-    st.subheader("Análisis de un sistema específico")
+    st.markdown(
+        '<p class="atlas-module-label">Vista detallada</p>',
+        unsafe_allow_html=True,
+    )
+    st.subheader("Explora un sistema concreto")
     render_system_concept_guide()
 
     if system_summary.empty:
-        st.warning("No hay sistemas disponibles con los filtros actuales.")
+        st.warning(
+            "No hay sistemas disponibles con los filtros actuales. Amplía la selección "
+            "desde la mesa de observación para recuperar esta vista."
+        )
         return
 
     selected_top_system = st.selectbox(
-        "Selecciona un sistema para visualizar su arquitectura",
+        "Sistema que quieres observar",
         options=system_summary["hostname"].tolist(),
         help="Elige una estrella para ver las métricas y la distribución de sus planetas.",
         key="selected_top_system",
@@ -1964,7 +2721,10 @@ def render_top_systems(
         sys_df_plot = sys_df_plot[(sys_df_plot[x_col] > 0) & (sys_df_plot[y_col] > 0)]
 
         if sys_df_plot.empty:
-            st.warning("Este sistema no tiene datos positivos suficientes para graficar en escala logarítmica.")
+            st.warning(
+                "Este sistema no reúne suficientes valores positivos para construir "
+                "el gráfico en escala logarítmica. La tabla inferior sigue disponible."
+            )
         else:
             if sys_df_plot["pl_rade"].notna().any():
                 sys_df_plot["marker_size"] = (
@@ -2044,7 +2804,7 @@ def render_top_systems(
                 tickfont=dict(color=plot_style["muted"]),
             )
 
-            st.plotly_chart(sys_fig, use_container_width=True, config=PLOTLY_CONFIG)
+            st.plotly_chart(sys_fig, width="stretch", config=PLOTLY_CONFIG)
 
         visible_sys_columns = [
             "pl_name",
@@ -2069,14 +2829,25 @@ def render_top_systems(
 
         st.dataframe(
             sys_table,
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
         )
 
 
 def render_csv_data(filtered: pd.DataFrame) -> None:
+    render_section_heading(
+        "03 · Registro completo",
+        "Catálogo de exoplanetas",
+        "Revisa los registros que cumplen tus filtros. Puedes ordenar las columnas, ampliar "
+        "la tabla o descargar exactamente la selección que estás viendo.",
+    )
+
     with st.container(border=True):
-        st.subheader("Catálogo filtrado")
+        st.markdown(
+            '<p class="atlas-module-label">Datos seleccionados</p>',
+            unsafe_allow_html=True,
+        )
+        st.subheader(f"{format_count(len(filtered))} exoplanetas en esta vista")
 
         visible_columns = [
             "pl_name",
@@ -2105,11 +2876,24 @@ def render_csv_data(filtered: pd.DataFrame) -> None:
 
         st.dataframe(
             catalog_display,
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
         )
 
-        st.caption("Fuente: NASA Exoplanet Archive · actualización diaria desde las 08:00 (hora de Chile).")
+        csv_bytes = catalog_display.to_csv(index=False).encode("utf-8-sig")
+        st.download_button(
+            "Descargar selección en CSV",
+            data=csv_bytes,
+            file_name="atlas_exoplanetas_filtrado.csv",
+            mime="text/csv",
+            width="stretch",
+            help="Descarga las filas visibles y conserva los encabezados en español.",
+        )
+
+        st.caption(
+            "Fuente: NASA Exoplanet Archive · el catálogo se actualiza cada día "
+            "a partir de las 08:00 (hora de Chile)."
+        )
 
 
 def reset_atlas_state() -> None:
@@ -2151,7 +2935,7 @@ def reset_atlas_state() -> None:
 
 def initialize_session_state() -> None:
     if "preset" not in st.session_state:
-        st.session_state["preset"] = "Masa vs semieje mayor"
+        st.session_state["preset"] = "Masa según el semieje mayor"
 
     if "x_axis" not in st.session_state:
         set_preset_state(st.session_state["preset"])
@@ -2177,7 +2961,11 @@ def validate_required_columns(df: pd.DataFrame) -> None:
     ]
 
     if missing_columns:
-        st.error(f"Faltan columnas requeridas en el catálogo: {missing_columns}")
+        st.error(
+            "El catálogo se cargó, pero le faltan campos indispensables para construir "
+            "la experiencia. Revisa el detalle técnico antes de volver a intentarlo."
+        )
+        st.code(", ".join(missing_columns), language=None)
         st.stop()
 
 
@@ -2189,21 +2977,31 @@ def main() -> None:
 
     st.markdown(
         """
-        <div class="hero">
-            <div class="hero-kicker">Atlas / Catálogo confirmado / NASA Exoplanet Archive</div>
-            <h1>Atlas de Exoplanetas</h1>
-            <p>
-                Explorador interactivo del catálogo confirmado de exoplanetas. Aplica filtros físicos
-                y orbitales para analizar semieje mayor, período, masa, radio y propiedades estelares
-                en busca de patrones de arquitectura planetaria.
-            </p>
-            <div class="hero-meta">
-                <span>Fuente <strong>NASA</strong></span>
-                <span>Catálogo <strong>PS</strong></span>
-                <span>Actualización <strong>diaria · 08:00</strong></span>
-                <span>Vista <strong>interactiva</strong></span>
+        <section class="hero">
+            <div class="hero-copy">
+                <div class="hero-kicker">Cartografía celeste · NASA Exoplanet Archive</div>
+                <h1>Atlas de <span>Exoplanetas</span></h1>
+                <p>
+                    Explora miles de mundos más allá del Sistema Solar. Compara sus órbitas,
+                    tamaños y masas; descubre cómo se organizan sus sistemas y qué señales
+                    permitieron encontrarlos.
+                </p>
+                <div class="hero-meta">
+                    <span>Fuente <strong>NASA</strong></span>
+                    <span>Catálogo <strong>PS</strong></span>
+                    <span>Actualización <strong>diaria · 08:00</strong></span>
+                    <span>Datos <strong>confirmados</strong></span>
+                </div>
             </div>
-        </div>
+            <div class="hero-orbit" aria-hidden="true">
+                <span class="orbit-ring"></span>
+                <span class="orbit-ring"></span>
+                <span class="orbit-ring"></span>
+                <span class="orbit-planet one"></span>
+                <span class="orbit-planet two"></span>
+                <span class="orbit-coordinates">RA 17h 45m · DEC −29°</span>
+            </div>
+        </section>
         """,
         unsafe_allow_html=True,
     )
@@ -2211,8 +3009,12 @@ def main() -> None:
     try:
         df = get_catalog(get_catalog_refresh_key())
     except Exception as error:
-        st.error("No se pudo cargar el catálogo de exoplanetas.")
-        st.exception(error)
+        st.error(
+            "No pudimos cargar el catálogo en este momento. Comprueba la conexión o "
+            "vuelve a intentarlo en unos minutos."
+        )
+        with st.expander("Ver detalle técnico"):
+            st.exception(error)
         st.stop()
 
     validate_required_columns(df)
@@ -2224,7 +3026,9 @@ def main() -> None:
     }
 
     if not labels:
-        st.error("No hay columnas numéricas disponibles para graficar.")
+        st.error(
+            "El catálogo no contiene parámetros numéricos disponibles para construir los gráficos."
+        )
         st.stop()
 
     render_overview(df)
@@ -2259,7 +3063,10 @@ def main() -> None:
         return
 
     if filtered.empty:
-        st.warning("Los filtros actuales excluyen todos los datos del catálogo.")
+        st.warning(
+            "No encontramos exoplanetas que coincidan con esta combinación de filtros. "
+            "Prueba ampliando el rango de planetas o incluyendo más métodos de detección."
+        )
         return
 
     if section == "Exploración orbital":
