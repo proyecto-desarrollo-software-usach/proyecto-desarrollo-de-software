@@ -3691,14 +3691,14 @@ def main() -> None:
                 <div class="hero-kicker">NASA Exoplanet Archive · catálogo</div>
                 <h1>Atlas de <span>Exoplanetas</span></h1>
                 <p>
-                    Cada punto de este atlas corresponde a un planeta confirmado fuera del
+                    Cada punto de este atlas corresponde a un exoplaneta confirmado fuera del
                     Sistema Solar. Puedes cruzar sus órbitas, masas y tamaños, y comprobar
                     cuándo un patrón se mantiene o se desarma al cambiar los datos.
                 </p>
                 <div class="hero-meta">
                     <span>Fuente <strong>NASA</strong></span>
                     <span>Actualización <strong>diaria · 08:00</strong></span>
-                    <span>Registro <strong>planetas confirmados</strong></span>
+                    <span>Registro <strong>exoplanetas confirmados</strong></span>
                 </div>
                 <a class="hero-action" href="#laboratorio">Ir al mapa de datos ↓</a>
             </div>
