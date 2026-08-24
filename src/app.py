@@ -1903,21 +1903,24 @@ CONTROL_THEME_CSS = r"""
    tema se cambia durante la sesión. Estas reglas hacen que cada control use
    las mismas variables que el resto de la interfaz.
 */
-[data-baseweb="button-group"]:has(button[data-testid^="stBaseButton-segmented_control"]) {
+[data-baseweb="button-group"]:has(button[data-testid^="stBaseButton-segmented_control"]),
+[data-testid="stButtonGroup"] > div[role="radiogroup"]:has(button[data-variant="segmented_control"]) {
     overflow: hidden;
     background: var(--atlas-surface) !important;
     border: 1px solid var(--atlas-border) !important;
 }
 
 button[data-testid="stBaseButton-segmented_control"],
-button[data-testid="stBaseButton-segmented_controlActive"] {
+button[data-testid="stBaseButton-segmented_controlActive"],
+button[data-variant="segmented_control"] {
     background: var(--atlas-surface) !important;
     color: var(--atlas-text-soft) !important;
     border-color: var(--atlas-border) !important;
     box-shadow: none !important;
 }
 
-button[data-testid="stBaseButton-segmented_controlActive"] {
+button[data-testid="stBaseButton-segmented_controlActive"],
+button[data-variant="segmented_control"][aria-checked="true"] {
     background: color-mix(in srgb, var(--atlas-accent) 12%, var(--atlas-surface-strong)) !important;
     color: var(--atlas-text) !important;
     border-color: var(--atlas-accent) !important;
@@ -1926,7 +1929,8 @@ button[data-testid="stBaseButton-segmented_controlActive"] {
 }
 
 button[data-testid="stBaseButton-segmented_control"]:hover,
-button[data-testid="stBaseButton-segmented_controlActive"]:hover {
+button[data-testid="stBaseButton-segmented_controlActive"]:hover,
+button[data-variant="segmented_control"]:hover {
     background: var(--atlas-surface-hover) !important;
     color: var(--atlas-text) !important;
 }
@@ -1950,20 +1954,24 @@ button[data-testid="stBaseButton-primaryFormSubmit"]:hover {
 }
 
 button[data-testid="stBaseButton-pills"],
-button[data-testid="stBaseButton-pillsActive"] {
+button[data-testid="stBaseButton-pillsActive"],
+button[data-variant="pills"] {
     background: var(--atlas-surface) !important;
     color: var(--atlas-text-soft) !important;
     border-color: var(--atlas-border) !important;
 }
 
-button[data-testid="stBaseButton-pillsActive"] {
+button[data-testid="stBaseButton-pillsActive"],
+button[data-variant="pills"][aria-checked="true"] {
     background: color-mix(in srgb, var(--atlas-accent) 11%, var(--atlas-surface)) !important;
     color: var(--atlas-text) !important;
     border-color: var(--atlas-accent) !important;
     font-weight: 700 !important;
 }
 
-button[data-testid^="stBaseButton-"] p {
+button[data-testid^="stBaseButton-"] p,
+button[data-variant="segmented_control"] p,
+button[data-variant="pills"] p {
     color: inherit !important;
 }
 
@@ -1977,7 +1985,8 @@ button[data-testid="stBaseButton-primary"]:disabled {
 }
 
 button[data-testid^="stBaseButton-"]:focus-visible,
-[data-baseweb="button-group"] button:focus-visible {
+[data-baseweb="button-group"] button:focus-visible,
+[data-testid="stButtonGroup"] button:focus-visible {
     outline: 2px solid var(--atlas-accent-2) !important;
     outline-offset: 2px !important;
 }
@@ -2392,13 +2401,44 @@ def render_section_heading(
     )
 
 
-def set_preset_state(preset_name: str) -> None:
+def normalize_preset_name(preset_value: object) -> str | None:
+    """Acepta los formatos usados por distintas versiones de st.pills."""
+    if isinstance(preset_value, str):
+        if preset_value in PRESETS:
+            return preset_value
+        return next(
+            (
+                preset_name
+                for preset_name, short_label in PRESET_SHORT_LABELS.items()
+                if short_label == preset_value
+            ),
+            None,
+        )
+
+    if isinstance(preset_value, (list, tuple, set)):
+        for item in preset_value:
+            normalized_item = normalize_preset_name(item)
+            if normalized_item is not None:
+                return normalized_item
+    return None
+
+
+def set_preset_state(preset_value: object) -> None:
+    preset_name = normalize_preset_name(preset_value)
+    if preset_name is None:
+        return
+
     preset = PRESETS[preset_name]
     st.session_state["x_axis"] = preset["x"]
     st.session_state["y_axis"] = preset["y"]
     st.session_state["color_mode"] = preset["color"]
     st.session_state["log_x"] = preset["log_x"]
     st.session_state["log_y"] = preset["log_y"]
+
+
+def apply_selected_preset() -> None:
+    """Sincroniza el gráfico sin fallar si el widget envía un estado transitorio."""
+    set_preset_state(st.session_state.get("preset"))
 
 
 def safe_mode_value(series: pd.Series) -> str:
@@ -3005,7 +3045,7 @@ def render_chart_dashboard(
                 key="preset",
                 required=True,
                 format_func=lambda value: PRESET_SHORT_LABELS[value],
-                on_change=lambda: set_preset_state(st.session_state["preset"]),
+                on_change=apply_selected_preset,
                 help="Cada opción carga una combinación distinta de variables.",
                 width="stretch",
             )
@@ -3015,7 +3055,7 @@ def render_chart_dashboard(
                 options=list(PRESETS.keys()),
                 key="preset",
                 format_func=lambda value: PRESET_SHORT_LABELS[value],
-                on_change=lambda: set_preset_state(st.session_state["preset"]),
+                on_change=apply_selected_preset,
                 help="Cada opción carga una combinación distinta de variables.",
                 width="stretch",
             )
@@ -3599,8 +3639,11 @@ def initialize_session_state() -> None:
     elif current_theme_mode not in THEME_MODES:
         st.session_state["theme_mode"] = "Sistema"
 
-    if "preset" not in st.session_state:
+    normalized_preset = normalize_preset_name(st.session_state.get("preset"))
+    if normalized_preset is None:
         st.session_state["preset"] = "Masa según el semieje mayor"
+    elif st.session_state.get("preset") != normalized_preset:
+        st.session_state["preset"] = normalized_preset
 
     if "x_axis" not in st.session_state:
         set_preset_state(st.session_state["preset"])
@@ -3739,3 +3782,7 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+
+
